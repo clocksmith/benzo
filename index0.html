@@ -318,7 +318,6 @@
                 <option value="ring_script">Ring Script</option>
                 <option value="grid_script">Grid Script</option>
                 <option value="path_script">Path Script</option>
-                <option value="design_tasks_script">Design Tasks Script</option>
             </select>
             <div id="playbackControls">
                 <button id="stepBackwardButton">Back</button>
@@ -460,43 +459,6 @@
                 "step28": { "compress_path": null, "message": "Compressing other diagonal path" },
                 "step29": { "add_compressed_path_to_graph": null, "message": "Adding compressed other diagonal path to graph" },
                 "step30": { "message": "Path script complete!" }
-            },
-            "design_tasks_script": {
-                "step1": { "reset": null, "message": "Start visualizing design workflow tasks" },
-                "step2": { "add_node": { "id": "task_font", "x": "center-200", "y": "100" }, "message": "Task: Identify Font from Image" },
-                "step3": { "add_node": { "id": "manual_font", "x": "center-350", "y": "200" }, "message": "Manual Font Identification" },
-                "step4": { "add_node": { "id": "ai_font", "x": "center-50", "y": "200" }, "message": "AI Font Recognition Agent" },
-                "step5": { "connect_nodes": { "node1": "task_font", "node2": "manual_font" }, "message": "Manual Solution" },
-                "step6": { "connect_nodes": { "node1": "task_font", "node2": "ai_font" }, "message": "AI Solution" },
-
-                "step7": { "add_node": { "id": "task_svg", "x": "center-200", "y": "300" }, "message": "Task: Convert SVG to Raster" },
-                "step8": { "add_node": { "id": "manual_svg", "x": "center-400", "y": "400" }, "message": "Manual SVG Export & Optimization" },
-                "step9": { "add_node": { "id": "script_svg", "x": "center-250", "y": "400" }, "message": "Scripted Batch Conversion" },
-                "step10": { "add_node": { "id": "ai_svg", "x": "center-100", "y": "400" }, "message": "AI-Powered Optimization Agent" },
-                "step11": { "connect_nodes": { "node1": "task_svg", "node2": "manual_svg" }, "message": "Manual Solution" },
-                "step12": { "connect_nodes": { "node1": "task_svg", "node2": "script_svg" }, "message": "Scripted Solution" },
-                "step13": { "connect_nodes": { "node1": "task_svg", "node2": "ai_svg" }, "message": "AI Solution" },
-
-                "step14": { "add_node": { "id": "task_animate", "x": "center-200", "y": "500" }, "message": "Task: Animate SVG Icons" },
-                "step15": { "add_node": { "id": "manual_animate", "x": "center-350", "y": "600" }, "message": "Manual Animation (CSS/JS)" },
-                "step16": { "add_node": { "id": "ai_animate", "x": "center-50", "y": "600" }, "message": "AI Animation Presets Tool" },
-                "step17": { "connect_nodes": { "node1": "task_animate", "node2": "manual_animate" }, "message": "Manual Animation" },
-                "step18": { "connect_nodes": { "node1": "task_animate", "node2": "ai_animate" }, "message": "AI Animation Tool" },
-
-                "step19": { "select_path": ["manual_font", "manual_svg", "manual_animate"], "message": "Selecting Manual Solution Paths" },
-                "step20": { "copy_move_to_focus": null, "message": "Moving Manual Paths to Focus Area" },
-                "step21": { "straighten_path": null, "message": "Straightening Manual Solution Paths" },
-                "step22": { "compress_path": null, "message": "Compressing Manual Solution Paths" },
-                "step23": { "add_compressed_path_to_graph": null, "message": "Adding Compressed Manual Paths" },
-
-                "step24": { "select_path": ["ai_font", "ai_svg", "ai_animate", "script_svg"], "message": "Selecting AI-Assisted Solution Paths" },
-                "step25": { "copy_move_to_focus": null, "message": "Moving AI-Assisted Paths to Focus Area" },
-                "step26": { "straighten_path": null, "message": "Straightening AI-Assisted Solution Paths" },
-                "step27": { "compress_path": null, "message": "Compressing AI-Assisted Solution Paths" },
-                "step28": { "add_compressed_path_to_graph": null, "message": "Adding Compressed AI-Assisted Paths" },
-
-                "step29": { "message": "Visualizing Design Workflow Optimization" },
-                "step30": { "message": "AI-Assisted tools significantly simplify design tasks." }
             }
         };
 
@@ -568,34 +530,12 @@
             graphCanvas.appendChild(fragment);
         }
 
-        function createNode(x, y, id) {
-            const canvasRect = graphCanvas.getBoundingClientRect();
-            let calculatedX = x;
-            let calculatedY = y;
-
-            if (typeof x === 'string' && x.startsWith('center')) {
-                calculatedX = graphCanvas.clientWidth / 2 + parseInt(x.split('-')[1] || 0, 10);
-            } else if (typeof x === 'string' && x === 'center') {
-                calculatedX = graphCanvas.clientWidth / 2;
-            } else {
-                calculatedX = parseFloat(x);
-            }
-
-            if (typeof y === 'string' && y.startsWith('center')) {
-                calculatedY = graphCanvas.clientHeight / 2 + parseInt(y.split('-')[1] || 0, 10);
-            } else if (typeof y === 'string' && y === 'center') {
-                calculatedY = graphCanvas.clientHeight / 2;
-            } else {
-                calculatedY = parseFloat(y);
-            }
-
-
-            const node = { id: nextNodeId++, x: calculatedX, y: calculatedY };
+        function createNode(x, y) {
+            const node = { id: nextNodeId++, x: x, y: y };
             nodes.push(node);
             renderGraph();
             return node.id.toString();
         }
-
 
         function removeNode(nodeId) {
             nodes = nodes.filter(node => node.id !== nodeId);
@@ -711,7 +651,264 @@
             document.body.classList.toggle('light-mode', !darkMode);
         }
 
-        loadScript, executeStep, stepForward, stepBackward, playScript, scriptStep, stopPlaying, togglePlayPause, updateStepDisplay, selectPath, copyMovePathToFocus, positionFocusNodes, straightenPathInFocus, compressPathInFocus, addCompressedPathToGraph
+        function loadScript(scriptName) {
+            currentScript = scripts[scriptName];
+            if (currentScript) {
+                scriptSteps = Object.entries(currentScript);
+                currentStepIndex = -1;
+                stopPlaying();
+                renderGraph();
+                updateStepDisplay();
+            } else {
+                console.error(`Script '${scriptName}' not found.`);
+            }
+        }
+
+        function executeStep(step) {
+            const action = step[1];
+            currentStepMessage.classList.remove('visible');
+            messageHistoryArray.push(currentStepMessage.textContent);
+            if (messageHistoryArray.length > 5) {
+                messageHistoryArray.shift();
+            }
+            updateMessageHistory();
+
+
+            if (action.reset !== undefined) {
+                resetGraph();
+            } else if (action.add_circular_rings !== undefined) {
+                applyRingLayout(action.add_circular_rings);
+            } else if (action.add_triangular_grid !== undefined) {
+                applyTriangularGridLayout(action.add_triangular_grid);
+            } else if (action.add_node !== undefined) {
+                createNode(Math.random() * graphCanvas.clientWidth, Math.random() * graphCanvas.clientHeight);
+            } else if (action.remove_node !== undefined) {
+                if (nodes.length > 0) {
+                    removeNode(nodes[nodes.length - 1].id);
+                }
+            } else if (action.connect_nodes !== undefined) {
+                const node1 = nodes.find(n => n.id === parseInt(action.connect_nodes.node1));
+                const node2 = nodes.find(n => n.id === parseInt(action.connect_nodes.node2));
+                if (node1 && node2) {
+                    createEdge(node1.id, node2.id);
+                } else {
+                    console.error("Nodes for connection not found:", action.connect_nodes);
+                }
+            } else if (action.select_path !== undefined) {
+                selectPath(action.select_path);
+            } else if (action.copy_move_to_focus !== undefined) {
+                copyMovePathToFocus();
+            } else if (action.straighten_path !== undefined) {
+                straightenPathInFocus();
+            } else if (action.compress_path !== undefined) {
+                compressPathInFocus();
+            } else if (action.add_compressed_path_to_graph !== undefined) {
+                addCompressedPathToGraph();
+            }
+
+
+            if (action.message !== undefined && action.message.trim() !== "") {
+                currentStepMessage.textContent = action.message;
+                void currentStepMessage.offsetWidth;
+                currentStepMessage.classList.add('visible');
+            } else {
+                currentStepMessage.textContent = "";
+            }
+            renderGraph();
+        }
+
+        function updateMessageHistory() {
+            messageHistory.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+            messageHistoryArray.forEach((message, index) => {
+                const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textElement.setAttribute('class', 'message-history');
+                textElement.setAttribute('x', '50%');
+                textElement.setAttribute('y', 5 + index * 12);
+                textElement.textContent = message;
+                fragment.appendChild(textElement);
+            });
+            messageHistory.appendChild(fragment);
+        }
+
+
+        function stepForward() {
+            if (!currentScript) return;
+            stopPlaying();
+            if (currentStepIndex < scriptSteps.length - 1) {
+                currentStepIndex++;
+                executeStep(scriptSteps[currentStepIndex]);
+                updateStepDisplay();
+            } else {
+                stopPlaying();
+                currentStepIndex = scriptSteps.length - 1;
+                updateStepDisplay();
+            }
+        }
+
+        function stepBackward() {
+            stopPlaying();
+            if (currentScript && currentStepIndex > 0) {
+                resetGraph();
+                for (let i = 0; i < currentStepIndex; i++) {
+                    executeStep(scriptSteps[i]);
+                }
+                currentStepIndex--;
+                updateStepDisplay();
+
+            } else if (currentStepIndex === 0) {
+                resetGraph();
+                currentStepIndex = -1;
+                updateStepDisplay();
+            }
+        }
+
+
+        function playScript() {
+            if (currentScript && !isPlaying) {
+                isPlaying = true;
+                playPauseButton.textContent = 'Playing...';
+                playSpeed = parseInt(speedSlider.value, 10);
+                stepDelay = playSpeed;
+                playInterval = setInterval(scriptStep, stepDelay);
+            }
+        }
+
+        function scriptStep() {
+            if (currentStepIndex < scriptSteps.length - 1) {
+                stepForward();
+            } else {
+                stopPlaying();
+                updateStepDisplay();
+            }
+        }
+
+
+        function stopPlaying() {
+            if (isPlaying) {
+                isPlaying = false;
+                clearInterval(playInterval);
+                playPauseButton.textContent = 'Play';
+            }
+        }
+
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                stopPlaying();
+            } else {
+                playScript();
+            }
+        }
+
+        function updateStepDisplay() {
+            scriptStepDisplay.textContent = currentScript ? `Step: ${currentStepIndex + 1}/${scriptSteps.length}` : 'Step: -';
+        }
+
+        function selectPath(nodeIds) {
+            selectedNodeIds = nodeIds.map(id => parseInt(id));
+            renderGraph();
+        }
+
+        function copyMovePathToFocus() {
+            resetFocusArea();
+            selectedNodeIds.forEach(nodeId => {
+                const originalNode = nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    const focusNode = { ...originalNode, id: nextFocusNodeId++ };
+                    focusNodes.push(focusNode);
+                }
+            });
+
+
+            selectedNodeIds.forEach(nodeId1 => {
+                selectedNodeIds.forEach(nodeId2 => {
+                    if (nodeId1 === nodeId2) return;
+                    let originalEdge = edges.find(e => (e.node1Id === nodeId1 && e.node2Id === nodeId2) || (e.node1Id === nodeId2 && e.node2Id === nodeId1));
+                    if (originalEdge) {
+                        const focusNode1 = focusNodes.find(fn => fn.id === focusNodes.findIndex(f => f.id === originalEdge.node1Id));
+                        const focusNode2 = focusNodes.find(fn => fn.id === focusNodes.findIndex(f => f.id === originalEdge.node2Id));
+                        if (!focusEdges.some(e => (e.node1Id === focusNode1.id && e.node2Id === focusNode2.id) || (e.node1Id === focusNode2.id && e.node2Id === focusNode1.id))) {
+                            const focusEdge = { ...originalEdge, id: nextFocusEdgeId++, node1Id: focusNode1.id, node2Id: focusNode2.id };
+                            focusEdges.push(focusEdge);
+                        }
+                    }
+                });
+            });
+            positionFocusNodes();
+            renderGraph();
+        }
+
+        function positionFocusNodes() {
+            if (focusNodes.length === 0) return;
+
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            focusNodes.forEach(node => {
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y);
+            });
+
+            const pathWidth = maxX - minX;
+            const pathHeight = maxY - minY;
+            const pathCenterX = minX + pathWidth / 2;
+            const pathCenterY = minY + pathHeight / 2;
+
+            const focusAreaElement = focusArea.getBoundingClientRect();
+            const focusCenterX = focusAreaElement.x + focusAreaElement.width / 2;
+            const focusCenterY = focusAreaElement.y + focusAreaElement.height / 2;
+
+            const offsetX = focusCenterX - pathCenterX;
+            const offsetY = focusCenterY - pathCenterY;
+
+            focusNodes.forEach(node => {
+                node.x += offsetX;
+                node.y += offsetY;
+            });
+        }
+
+
+        function straightenPathInFocus() {
+            positionFocusNodes();
+            renderGraph();
+        }
+
+        function compressPathInFocus() {
+            focusNodes = focusNodes.filter((node, index) => index % 2 === 0);
+            focusEdges = focusEdges.filter(edge => focusNodes.some(node => node.id === edge.node1Id) && focusNodes.some(node => node.id === edge.node2Id));
+            positionFocusNodes();
+            renderGraph();
+        }
+
+        function addCompressedPathToGraph() {
+            focusNodes.forEach(fNode => {
+                const newNode = { ...fNode, id: nextNodeId++, x: fNode.x, y: fNode.y }; // Use focus node positions
+                nodes.push(newNode);
+                focusEdges.forEach(fEdge => {
+                    if ((fEdge.node1Id === fNode.id)) {
+                        const n1 = nodes.find(n => n.id === newNode.id);
+                        const n2 = nodes.find(n => n.id === focusNodes.find(fn => fn.id === fEdge.node2Id).id);
+                        if (n1 && n2) {
+                            createEdge(n1.id, n2.id);
+                        }
+                    }
+                });
+            });
+            focusEdges.forEach(fEdge => {
+                const focusNode1 = focusNodes.find(fn => fn.id === fEdge.node1Id);
+                const focusNode2 = focusNodes.find(fn => fn.id === fEdge.node2Id);
+                const n1 = nodes.find(n => n.x === focusNode1.x && n.y === focusNode1.y); // Find new node by position
+                const n2 = nodes.find(n => n.x === focusNode2.x && n.y === focusNode2.y); // Find new node by position
+                if (n1 && n2) {
+                    createEdge(n1.id, n2.id);
+                }
+            });
+            resetFocusArea();
+            renderGraph();
+        }
+
+
         darkModeToggle.addEventListener('click', toggleDarkMode);
         resetButton.addEventListener('click', resetGraph);
         addNodeButton.addEventListener('click', () => {

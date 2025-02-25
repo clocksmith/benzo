@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Graph Builder</title>
+    <title>⌬</title>
     <style>
         :root {
             --bg-color: black;
@@ -306,7 +306,7 @@
 <body class="dark-mode">
 
     <div id="darkModeToggleContainer">
-        <span id="darkModeToggle">🝣</span>
+        <span id="darkModeToggle">㊰</span>
     </div>
 
     <div id="controls">
@@ -319,6 +319,7 @@
                 <option value="grid_script">Grid Script</option>
                 <option value="path_script">Path Script</option>
                 <option value="design_tasks_script">Design Tasks Script</option>
+                <option value="gen_ui_script">GenUI Script</option>
             </select>
             <div id="playbackControls">
                 <button id="stepBackwardButton">Back</button>
@@ -461,7 +462,7 @@
                 "step29": { "add_compressed_path_to_graph": null, "message": "Adding compressed other diagonal path to graph" },
                 "step30": { "message": "Path script complete!" }
             },
-            "d_path_script": {
+            "design_tasks_script": {
                 "step1": {
                     "reset": null,
                     "message": "Resetting graph to visualize Design Task JSON"
@@ -513,448 +514,448 @@
                     "message": "Visualizing Time Scale..."
                 },
                 "step10": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScaleTitle", "label": "Time Scale" },
                     "message": "Adding 'Time Scale' title"
                 },
                 "step11": {
                     "connect_nodes": {
-                        "node1": "15",
+                        "node1": "timeScaleTitle",
                         "node2": "16"
                     },
                     "message": "Connecting title to scale values"
                 },
                 "step12": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale1", "label": "1 - Seconds" },
                     "message": "1 - Seconds"
                 },
                 "step13": {
                     "connect_nodes": {
-                        "node1": "16",
-                        "node2": "17"
+                        "node1": "timeScale1",
+                        "node2": "timeScaleTitle"
                     },
                     "message": " "
                 },
                 "step14": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale2", "label": "2 - Minutes" },
                     "message": "2 - Minutes"
                 },
                 "step15": {
                     "connect_nodes": {
-                        "node1": "17",
-                        "node2": "18"
+                        "node1": "timeScale2",
+                        "node2": "timeScale1"
                     },
                     "message": " "
                 },
                 "step16": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale3", "label": "3 - Hours" },
                     "message": "3 - Hours"
                 },
                 "step17": {
                     "connect_nodes": {
-                        "node1": "18",
-                        "node2": "19"
+                        "node1": "timeScale3",
+                        "node2": "timeScale2"
                     },
                     "message": " "
                 },
                 "step18": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale4", "label": "4 - Half-Day" },
                     "message": "4 - Half-Day"
                 },
                 "step19": {
                     "connect_nodes": {
-                        "node1": "19",
-                        "node2": "20"
+                        "node1": "timeScale4",
+                        "node2": "timeScale3"
                     },
                     "message": " "
                 },
                 "step20": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale5", "label": "5 - Day" },
                     "message": "5 - Day"
                 },
                 "step21": {
                     "connect_nodes": {
-                        "node1": "20",
-                        "node2": "21"
+                        "node1": "timeScale5",
+                        "node2": "timeScale4"
                     },
                     "message": " "
                 },
                 "step22": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale6", "label": "6 - Days" },
                     "message": "6 - Days"
                 },
                 "step23": {
                     "connect_nodes": {
-                        "node1": "21",
-                        "node2": "22"
+                        "node1": "timeScale6",
+                        "node2": "timeScale5"
                     },
                     "message": " "
                 },
                 "step24": {
-                    "add_node": null,
+                    "add_node": { "id": "timeScale7", "label": "7 - Weeks+" },
                     "message": "7 - Weeks+"
                 },
                 "step25": {
                     "message": "Visualizing Pain Level Scale..."
                 },
                 "step26": {
-                    "add_node": null,
+                    "add_node": { "id": "painScaleTitle", "label": "Pain Level Scale" },
                     "message": "Pain Level Scale"
                 },
                 "step27": {
                     "connect_nodes": {
-                        "node1": "15",
-                        "node2": "23"
+                        "node1": "painScaleTitle",
+                        "node2": "timeScale7"
                     },
                     "message": " "
                 },
                 "step28": {
                     "connect_nodes": {
-                        "node1": "23",
-                        "node2": "24"
+                        "node1": "painScaleTitle",
+                        "node2": "timeScaleTitle"
                     },
                     "message": " "
                 },
                 "step29": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale1", "label": "1 - Negligible" },
                     "message": "1 - Negligible"
                 },
                 "step30": {
                     "connect_nodes": {
-                        "node1": "24",
-                        "node2": "25"
+                        "node1": "painScale1",
+                        "node2": "painScaleTitle"
                     },
                     "message": " "
                 },
                 "step31": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale2", "label": "2 - Minor" },
                     "message": "2 - Minor"
                 },
                 "step32": {
                     "connect_nodes": {
-                        "node1": "25",
-                        "node2": "26"
+                        "node1": "painScale2",
+                        "node2": "painScale1"
                     },
                     "message": " "
                 },
                 "step33": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale3", "label": "3 - Moderate" },
                     "message": "3 - Moderate"
                 },
                 "step34": {
                     "connect_nodes": {
-                        "node1": "26",
-                        "node2": "27"
+                        "node1": "painScale3",
+                        "node2": "painScale2"
                     },
                     "message": " "
                 },
                 "step35": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale4", "label": "4 - Somewhat Painful" },
                     "message": "4 - Somewhat Painful"
                 },
                 "step36": {
                     "connect_nodes": {
-                        "node1": "27",
-                        "node2": "28"
+                        "node1": "painScale4",
+                        "node2": "painScale3"
                     },
                     "message": " "
                 },
                 "step37": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale5", "label": "5 - Painful" },
                     "message": "5 - Painful"
                 },
                 "step38": {
                     "connect_nodes": {
-                        "node1": "28",
-                        "node2": "29"
+                        "node1": "painScale5",
+                        "node2": "painScale4"
                     },
                     "message": " "
                 },
                 "step39": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale6", "label": "6 - Very Painful" },
                     "message": "6 - Very Painful"
                 },
                 "step40": {
                     "connect_nodes": {
-                        "node1": "29",
-                        "node2": "30"
+                        "node1": "painScale6",
+                        "node2": "painScale5"
                     },
                     "message": " "
                 },
                 "step41": {
-                    "add_node": null,
+                    "add_node": { "id": "painScale7", "label": "7 - Excruciating" },
                     "message": "7 - Excruciating"
                 },
                 "step42": {
                     "message": "Visualizing Complexity Scale..."
                 },
                 "step43": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScaleTitle", "label": "Complexity Scale" },
                     "message": "Complexity Scale"
                 },
                 "step44": {
                     "connect_nodes": {
-                        "node1": "15",
-                        "node2": "31"
+                        "node1": "complexityScaleTitle",
+                        "node2": "painScale7"
                     },
                     "message": " "
                 },
                 "step45": {
                     "connect_nodes": {
-                        "node1": "31",
-                        "node2": "32"
+                        "node1": "complexityScaleTitle",
+                        "node2": "timeScaleTitle"
                     },
                     "message": " "
                 },
                 "step46": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale1", "label": "1 - Trivial" },
                     "message": "1 - Trivial"
                 },
                 "step47": {
                     "connect_nodes": {
-                        "node1": "32",
-                        "node2": "33"
+                        "node1": "complexityScale1",
+                        "node2": "complexityScaleTitle"
                     },
                     "message": " "
                 },
                 "step48": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale2", "label": "2 - Simple" },
                     "message": "2 - Simple"
                 },
                 "step49": {
                     "connect_nodes": {
-                        "node1": "33",
-                        "node2": "34"
+                        "node1": "complexityScale2",
+                        "node2": "complexityScale1"
                     },
                     "message": " "
                 },
                 "step50": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale3", "label": "3 - Moderate" },
                     "message": "3 - Moderate"
                 },
                 "step51": {
                     "connect_nodes": {
-                        "node1": "34",
-                        "node2": "35"
+                        "node1": "complexityScale3",
+                        "node2": "complexityScale2"
                     },
                     "message": " "
                 },
                 "step52": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale4", "label": "4 - Somewhat Complex" },
                     "message": "4 - Somewhat Complex"
                 },
                 "step53": {
                     "connect_nodes": {
-                        "node1": "35",
-                        "node2": "36"
+                        "node1": "complexityScale4",
+                        "node2": "complexityScale3"
                     },
                     "message": " "
                 },
                 "step54": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale5", "label": "5 - Complex" },
                     "message": "5 - Complex"
                 },
                 "step55": {
                     "connect_nodes": {
-                        "node1": "36",
-                        "node2": "37"
+                        "node1": "complexityScale5",
+                        "node2": "complexityScale4"
                     },
                     "message": " "
                 },
                 "step56": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale6", "label": "6 - Very Complex" },
                     "message": "6 - Very Complex"
                 },
                 "step57": {
                     "connect_nodes": {
-                        "node1": "37",
-                        "node2": "38"
+                        "node1": "complexityScale6",
+                        "node2": "complexityScale5"
                     },
                     "message": " "
                 },
                 "step58": {
-                    "add_node": null,
+                    "add_node": { "id": "complexityScale7", "label": "7 - Extremely Complex" },
                     "message": "7 - Extremely Complex"
                 },
                 "step59": {
                     "message": "Visualizing Human In Loop Feedback (Initial) Scale..."
                 },
                 "step60": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScaleTitle", "label": "Feedback Initial Scale" },
                     "message": "Feedback Initial Scale"
                 },
                 "step61": {
                     "connect_nodes": {
-                        "node1": "15",
-                        "node2": "39"
+                        "node1": "feedbackInitialScaleTitle",
+                        "node2": "complexityScale7"
                     },
                     "message": " "
                 },
                 "step62": {
                     "connect_nodes": {
-                        "node1": "39",
-                        "node2": "40"
+                        "node1": "feedbackInitialScaleTitle",
+                        "node2": "timeScaleTitle"
                     },
                     "message": " "
                 },
                 "step63": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale1", "label": "1 - None" },
                     "message": "1 - None"
                 },
                 "step64": {
                     "connect_nodes": {
-                        "node1": "40",
-                        "node2": "41"
+                        "node1": "feedbackInitialScale1",
+                        "node2": "feedbackInitialScaleTitle"
                     },
                     "message": " "
                 },
                 "step65": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale2", "label": "2 - Minimal" },
                     "message": "2 - Minimal"
                 },
                 "step66": {
                     "connect_nodes": {
-                        "node1": "41",
-                        "node2": "42"
+                        "node1": "feedbackInitialScale2",
+                        "node2": "feedbackInitialScale1"
                     },
                     "message": " "
                 },
                 "step67": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale3", "label": "3 - Low" },
                     "message": "3 - Low"
                 },
                 "step68": {
                     "connect_nodes": {
-                        "node1": "42",
-                        "node2": "43"
+                        "node1": "feedbackInitialScale3",
+                        "node2": "feedbackInitialScale2"
                     },
                     "message": " "
                 },
                 "step69": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale4", "label": "4 - Moderate" },
                     "message": "4 - Moderate"
                 },
                 "step70": {
                     "connect_nodes": {
-                        "node1": "43",
-                        "node2": "44"
+                        "node1": "feedbackInitialScale4",
+                        "node2": "feedbackInitialScale3"
                     },
                     "message": " "
                 },
                 "step71": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale5", "label": "5 - Significant" },
                     "message": "5 - Significant"
                 },
                 "step72": {
                     "connect_nodes": {
-                        "node1": "44",
-                        "node2": "45"
+                        "node1": "feedbackInitialScale5",
+                        "node2": "feedbackInitialScale4"
                     },
                     "message": " "
                 },
                 "step73": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale6", "label": "6 - High" },
                     "message": "6 - High"
                 },
                 "step74": {
                     "connect_nodes": {
-                        "node1": "45",
-                        "node2": "46"
+                        "node1": "feedbackInitialScale6",
+                        "node2": "feedbackInitialScale5"
                     },
                     "message": " "
                 },
                 "step75": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackInitialScale7", "label": "7 - Critical" },
                     "message": "7 - Critical"
                 },
                 "step76": {
                     "message": "Visualizing Human In Loop Feedback (Refined) Scale..."
                 },
                 "step77": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScaleTitle", "label": "Feedback Refined Scale" },
                     "message": "Feedback Refined Scale"
                 },
                 "step78": {
                     "connect_nodes": {
-                        "node1": "15",
-                        "node2": "47"
+                        "node1": "feedbackRefinedScaleTitle",
+                        "node2": "feedbackInitialScale7"
                     },
                     "message": " "
                 },
                 "step79": {
                     "connect_nodes": {
-                        "node1": "47",
-                        "node2": "48"
+                        "node1": "feedbackRefinedScaleTitle",
+                        "node2": "timeScaleTitle"
                     },
                     "message": " "
                 },
                 "step80": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale1", "label": "1 - None" },
                     "message": "1 - None"
                 },
                 "step81": {
                     "connect_nodes": {
-                        "node1": "48",
-                        "node2": "49"
+                        "node1": "feedbackRefinedScale1",
+                        "node2": "feedbackRefinedScaleTitle"
                     },
                     "message": " "
                 },
                 "step82": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale2", "label": "2 - Minimal" },
                     "message": "2 - Minimal"
                 },
                 "step83": {
                     "connect_nodes": {
-                        "node1": "49",
-                        "node2": "50"
+                        "node1": "feedbackRefinedScale2",
+                        "node2": "feedbackRefinedScale1"
                     },
                     "message": " "
                 },
                 "step84": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale3", "label": "3 - Low" },
                     "message": "3 - Low"
                 },
                 "step85": {
                     "connect_nodes": {
-                        "node1": "50",
-                        "node2": "51"
+                        "node1": "feedbackRefinedScale3",
+                        "node2": "feedbackRefinedScale2"
                     },
                     "message": " "
                 },
                 "step86": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale4", "label": "4 - Moderate" },
                     "message": "4 - Moderate"
                 },
                 "step87": {
                     "connect_nodes": {
-                        "node1": "51",
-                        "node2": "52"
+                        "node1": "feedbackRefinedScale4",
+                        "node2": "feedbackRefinedScale3"
                     },
                     "message": " "
                 },
                 "step88": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale5", "label": "5 - Significant" },
                     "message": "5 - Significant"
                 },
                 "step89": {
                     "connect_nodes": {
-                        "node1": "52",
-                        "node2": "53"
+                        "node1": "feedbackRefinedScale5",
+                        "node2": "feedbackRefinedScale4"
                     },
                     "message": " "
                 },
                 "step90": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale6", "label": "6 - High" },
                     "message": "6 - High"
                 },
                 "step91": {
                     "connect_nodes": {
-                        "node1": "53",
-                        "node2": "54"
+                        "node1": "feedbackRefinedScale6",
+                        "node2": "feedbackRefinedScale5"
                     },
                     "message": " "
                 },
                 "step92": {
-                    "add_node": null,
+                    "add_node": { "id": "feedbackRefinedScale7", "label": "7 - Critical" },
                     "message": "7 - Critical"
                 },
                 "step93": {
@@ -962,46 +963,46 @@
                 },
                 "step94": {
                     "select_path": [
-                        "15",
-                        "16",
-                        "17",
-                        "18",
-                        "19",
-                        "20",
-                        "21",
-                        "22",
-                        "23",
-                        "24",
-                        "25",
-                        "26",
-                        "27",
-                        "28",
-                        "29",
-                        "30",
-                        "31",
-                        "32",
-                        "33",
-                        "34",
-                        "35",
-                        "36",
-                        "37",
-                        "38",
-                        "39",
-                        "40",
-                        "41",
-                        "42",
-                        "43",
-                        "44",
-                        "45",
-                        "46",
-                        "47",
-                        "48",
-                        "49",
-                        "50",
-                        "51",
-                        "52",
-                        "53",
-                        "54"
+                        "timeScaleTitle",
+                        "timeScale1",
+                        "timeScale2",
+                        "timeScale3",
+                        "timeScale4",
+                        "timeScale5",
+                        "timeScale6",
+                        "timeScale7",
+                        "painScaleTitle",
+                        "painScale1",
+                        "painScale2",
+                        "painScale3",
+                        "painScale4",
+                        "painScale5",
+                        "painScale6",
+                        "painScale7",
+                        "complexityScaleTitle",
+                        "complexityScale1",
+                        "complexityScale2",
+                        "complexityScale3",
+                        "complexityScale4",
+                        "complexityScale5",
+                        "complexityScale6",
+                        "complexityScale7",
+                        "feedbackInitialScaleTitle",
+                        "feedbackInitialScale1",
+                        "feedbackInitialScale2",
+                        "feedbackInitialScale3",
+                        "feedbackInitialScale4",
+                        "feedbackInitialScale5",
+                        "feedbackInitialScale6",
+                        "feedbackInitialScale7",
+                        "feedbackRefinedScaleTitle",
+                        "feedbackRefinedScale1",
+                        "feedbackRefinedScale2",
+                        "feedbackRefinedScale3",
+                        "feedbackRefinedScale4",
+                        "feedbackRefinedScale5",
+                        "feedbackRefinedScale6",
+                        "feedbackRefinedScale7"
                     ],
                     "message": "Selecting all scales"
                 },
@@ -1025,378 +1026,716 @@
                     "message": "Starting Task Visualization: Identify Font from Image"
                 },
                 "step100": {
-                    "add_node": null,
+                    "add_node": { "id": "task1Title", "label": "Task: Identify Font from Image" },
                     "message": "Task: Identify Font from Image"
                 },
                 "step101": {
                     "connect_nodes": {
-                        "node1": "55",
-                        "node2": "55"
+                        "node1": "task1Title",
+                        "node2": "task1Title"
                     },
                     "message": " "
                 },
                 "step102": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualSol", "label": "Manual Solution" },
                     "message": "Manual Solution"
                 },
                 "step103": {
                     "connect_nodes": {
-                        "node1": "56",
-                        "node2": "57"
+                        "node1": "task1ManualSol",
+                        "node2": "task1Title"
                     },
                     "message": " "
                 },
                 "step104": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualPain", "label": "Pain: 3" },
                     "message": "Pain: 3"
                 },
                 "step105": {
                     "connect_nodes": {
-                        "node1": "57",
-                        "node2": "58"
+                        "node1": "task1ManualPain",
+                        "node2": "task1ManualSol"
                     },
                     "message": " "
                 },
                 "step106": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualComplexity", "label": "Complexity: 1" },
                     "message": "Complexity: 1"
                 },
                 "step107": {
                     "connect_nodes": {
-                        "node1": "58",
-                        "node2": "59"
+                        "node1": "task1ManualComplexity",
+                        "node2": "task1ManualPain"
                     },
                     "message": " "
                 },
                 "step108": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualTime", "label": "Time: 2 (Minutes)" },
                     "message": "Time: 2 (Minutes)"
                 },
                 "step109": {
                     "connect_nodes": {
-                        "node1": "59",
-                        "node2": "60"
+                        "node1": "task1ManualTime",
+                        "node2": "task1ManualComplexity"
                     },
                     "message": " "
                 },
                 "step110": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualFeedbackInitial", "label": "Feedback Initial: 1" },
                     "message": "Feedback Initial: 1"
                 },
                 "step111": {
                     "connect_nodes": {
-                        "node1": "60",
-                        "node2": "61"
+                        "node1": "task1ManualFeedbackInitial",
+                        "node2": "task1ManualTime"
                     },
                     "message": " "
                 },
                 "step112": {
-                    "add_node": null,
+                    "add_node": { "id": "task1ManualFeedbackRefined", "label": "Feedback Refined: 1" },
                     "message": "Feedback Refined: 1"
                 },
                 "step113": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentSol", "label": "Agent Solution" },
                     "message": "Agent Solution"
                 },
                 "step114": {
                     "connect_nodes": {
-                        "node1": "56",
-                        "node2": "62"
+                        "node1": "task1AgentSol",
+                        "node2": "task1Title"
                     },
                     "message": " "
                 },
                 "step115": {
                     "connect_nodes": {
-                        "node1": "62",
-                        "node2": "63"
+                        "node1": "task1AgentSol",
+                        "node2": "task1ManualSol"
                     },
                     "message": " "
                 },
                 "step116": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentPain", "label": "Pain: 1" },
                     "message": "Pain: 1"
                 },
                 "step117": {
                     "connect_nodes": {
-                        "node1": "63",
-                        "node2": "64"
+                        "node1": "task1AgentPain",
+                        "node2": "task1AgentSol"
                     },
                     "message": " "
                 },
                 "step118": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentComplexity", "label": "Complexity: 1" },
                     "message": "Complexity: 1"
                 },
                 "step119": {
                     "connect_nodes": {
-                        "node1": "64",
-                        "node2": "65"
+                        "node1": "task1AgentComplexity",
+                        "node2": "task1AgentPain"
                     },
                     "message": " "
                 },
                 "step120": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentTime", "label": "Time: 1 (Seconds)" },
                     "message": "Time: 1 (Seconds)"
                 },
                 "step121": {
                     "connect_nodes": {
-                        "node1": "65",
-                        "node2": "66"
+                        "node1": "task1AgentTime",
+                        "node2": "task1AgentComplexity"
                     },
                     "message": " "
                 },
                 "step122": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentFeedbackInitial", "label": "Feedback Initial: 4" },
                     "message": "Feedback Initial: 4"
                 },
                 "step123": {
                     "connect_nodes": {
-                        "node1": "66",
-                        "node2": "67"
+                        "node1": "task1AgentFeedbackInitial",
+                        "node2": "task1AgentTime"
                     },
                     "message": " "
                 },
                 "step124": {
-                    "add_node": null,
+                    "add_node": { "id": "task1AgentFeedbackRefined", "label": "Feedback Refined: 2" },
                     "message": "Feedback Refined: 2"
                 },
                 "step125": {
                     "message": "Visualizing Task: Convert SVG to Optimized Raster"
                 },
                 "step126": {
-                    "add_node": null,
+                    "add_node": { "id": "task2Title", "label": "Task: Convert SVG to Optimized Raster" },
                     "message": "Task: Convert SVG to Optimized Raster"
                 },
                 "step127": {
                     "connect_nodes": {
-                        "node1": "68",
-                        "node2": "69"
+                        "node1": "task2Title",
+                        "node2": "task1AgentFeedbackRefined"
                     },
                     "message": " "
                 },
                 "step128": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualSol", "label": "Manual Solution" },
                     "message": "Manual Solution"
                 },
                 "step129": {
                     "connect_nodes": {
-                        "node1": "70",
-                        "node2": "71"
+                        "node1": "task2ManualSol",
+                        "node2": "task2Title"
                     },
                     "message": " "
                 },
                 "step130": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualPain", "label": "Pain: 2" },
                     "message": "Pain: 2"
                 },
                 "step131": {
                     "connect_nodes": {
-                        "node1": "71",
-                        "node2": "72"
+                        "node1": "task2ManualPain",
+                        "node2": "task2ManualSol"
                     },
                     "message": " "
                 },
                 "step132": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualComplexity", "label": "Complexity: 1" },
                     "message": "Complexity: 1"
                 },
                 "step133": {
                     "connect_nodes": {
-                        "node1": "72",
-                        "node2": "73"
+                        "node1": "task2ManualComplexity",
+                        "node2": "task2ManualPain"
                     },
                     "message": " "
                 },
                 "step134": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualTime", "label": "Time: 2 (Minutes)" },
                     "message": "Time: 2 (Minutes)"
                 },
                 "step135": {
                     "connect_nodes": {
-                        "node1": "73",
-                        "node2": "74"
+                        "node1": "task2ManualTime",
+                        "node2": "task2ManualComplexity"
                     },
                     "message": " "
                 },
                 "step136": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualFeedbackInitial", "label": "Feedback Initial: 1" },
                     "message": "Feedback Initial: 1"
                 },
                 "step137": {
                     "connect_nodes": {
-                        "node1": "74",
-                        "node2": "75"
+                        "node1": "task2ManualFeedbackInitial",
+                        "node2": "task2ManualTime"
                     },
                     "message": " "
                 },
                 "step138": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ManualFeedbackRefined", "label": "Feedback Refined: 1" },
                     "message": "Feedback Refined: 1"
                 },
                 "step139": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptSol", "label": "Script Solution" },
                     "message": "Script Solution"
                 },
                 "step140": {
                     "connect_nodes": {
-                        "node1": "70",
-                        "node2": "76"
+                        "node1": "task2ScriptSol",
+                        "node2": "task2Title"
                     },
                     "message": " "
                 },
                 "step141": {
                     "connect_nodes": {
-                        "node1": "76",
-                        "node2": "77"
+                        "node1": "task2ScriptSol",
+                        "node2": "task2ManualSol"
                     },
                     "message": " "
                 },
                 "step142": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptPain", "label": "Pain: 1" },
                     "message": "Pain: 1"
                 },
                 "step143": {
                     "connect_nodes": {
-                        "node1": "77",
-                        "node2": "78"
+                        "node1": "task2ScriptPain",
+                        "node2": "task2ScriptSol"
                     },
                     "message": " "
                 },
                 "step144": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptComplexity", "label": "Complexity: 2" },
                     "message": "Complexity: 2"
                 },
                 "step145": {
                     "connect_nodes": {
-                        "node1": "78",
-                        "node2": "79"
+                        "node1": "task2ScriptComplexity",
+                        "node2": "task2ScriptPain"
                     },
                     "message": " "
                 },
                 "step146": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptTime", "label": "Time: 2 (Minutes)" },
                     "message": "Time: 2 (Minutes)"
                 },
                 "step147": {
                     "connect_nodes": {
-                        "node1": "79",
-                        "node2": "80"
+                        "node1": "task2ScriptTime",
+                        "node2": "task2ScriptComplexity"
                     },
                     "message": " "
                 },
                 "step148": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptFeedbackInitial", "label": "Feedback Initial: 3" },
                     "message": "Feedback Initial: 3"
                 },
                 "step149": {
                     "connect_nodes": {
-                        "node1": "80",
-                        "node2": "81"
+                        "node1": "task2ScriptFeedbackInitial",
+                        "node2": "task2ScriptTime"
                     },
                     "message": " "
                 },
                 "step150": {
-                    "add_node": null,
+                    "add_node": { "id": "task2ScriptFeedbackRefined", "label": "Feedback Refined: 2" },
                     "message": "Feedback Refined: 2"
                 },
                 "step151": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentSol", "label": "Agent Solution" },
                     "message": "Agent Solution"
                 },
                 "step152": {
                     "connect_nodes": {
-                        "node1": "70",
-                        "node2": "82"
+                        "node1": "task2AgentSol",
+                        "node2": "task2Title"
                     },
                     "message": " "
                 },
                 "step153": {
                     "connect_nodes": {
-                        "node1": "82",
-                        "node2": "83"
+                        "node1": "task2AgentSol",
+                        "node2": "task2ManualSol"
                     },
                     "message": " "
                 },
                 "step154": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentPain", "label": "Pain: 1" },
                     "message": "Pain: 1"
                 },
                 "step155": {
                     "connect_nodes": {
-                        "node1": "83",
-                        "node2": "84"
+                        "node1": "task2AgentPain",
+                        "node2": "task2AgentSol"
                     },
                     "message": " "
                 },
                 "step156": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentComplexity", "label": "Complexity: 2" },
                     "message": "Complexity: 2"
                 },
                 "step157": {
                     "connect_nodes": {
-                        "node1": "84",
-                        "node2": "85"
+                        "node1": "task2AgentComplexity",
+                        "node2": "task2AgentPain"
                     },
                     "message": " "
                 },
                 "step158": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentTime", "label": "Time: 1 (Seconds)" },
                     "message": "Time: 1 (Seconds)"
                 },
                 "step159": {
                     "connect_nodes": {
-                        "node1": "85",
-                        "node2": "86"
+                        "node1": "task2AgentTime",
+                        "node2": "task2AgentComplexity"
                     },
                     "message": " "
                 },
                 "step160": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentFeedbackInitial", "label": "Feedback Initial: 4" },
                     "message": "Feedback Initial: 4"
                 },
                 "step161": {
                     "connect_nodes": {
-                        "node1": "86",
-                        "node2": "87"
+                        "node1": "task2AgentFeedbackInitial",
+                        "node2": "task2AgentTime"
                     },
                     "message": " "
                 },
                 "step162": {
-                    "add_node": null,
+                    "add_node": { "id": "task2AgentFeedbackRefined", "label": "Feedback Refined: 2" },
                     "message": "Feedback Refined: 2"
                 },
                 "step163": {
                     "message": "Continuing to visualize remaining tasks... (steps 163-300+ will follow similar pattern for brevity)"
                 },
                 "step164": {
-                    "add_node": null,
+                    "add_node": { "id": "task3Title", "label": "Task 3..." },
                     "message": "..."
                 },
                 "step165": {
-                    "add_node": null,
+                    "add_node": { "id": "task4Title", "label": "Task 4..." },
                     "message": "..."
                 },
                 "step166": {
-                    "add_node": null,
+                    "add_node": { "id": "task5Title", "label": "Task 5..." },
                     "message": "..."
                 },
                 "step167": {
-                    "add_node": null,
+                    "add_node": { "id": "task6Title", "label": "Task 6..." },
                     "message": "..."
                 },
                 "step168": {
-                    "add_node": null,
+                    "add_node": { "id": "task7Title", "label": "Task 7..." },
                     "message": "..."
                 },
                 "step169": {
-                    "add_node": null,
+                    "add_node": { "id": "task8Title", "label": "Task 8..." },
                     "message": "..."
                 },
+                "step170": {
+                    "add_node": { "id": "task9Title", "label": "Task 9..." },
+                    "message": "..."
+                },
+                "step171": {
+                    "add_node": { "id": "task10Title", "label": "Task 10..." },
+                    "message": "..."
+                },
+                "step172": {
+                    "add_node": { "id": "task11Title", "label": "Task 11..." },
+                    "message": "..."
+                },
+                "step173": {
+                    "add_node": { "id": "task12Title", "label": "Task 12..." },
+                    "message": "..."
+                },
+                "step174": {
+                    "add_node": { "id": "task13Title", "label": "Task 13..." },
+                    "message": "..."
+                },
+                "step175": {
+                    "add_node": { "id": "task14Title", "label": "Task 14..." },
+                    "message": "..."
+                },
+                "step176": {
+                    "add_node": { "id": "task15Title", "label": "Task 15..." },
+                    "message": "..."
+                },
+                "step177": {
+                    "add_node": { "id": "task16Title", "label": "Task 16..." },
+                    "message": "..."
+                },
+                "step178": {
+                    "add_node": { "id": "task17Title", "label": "Task 17..." },
+                    "message": "..."
+                },
+                "step179": {
+                    "add_node": { "id": "task18Title", "label": "Task 18..." },
+                    "message": "..."
+                },
+                "step180": {
+                    "add_node": { "id": "task19Title", "label": "Task 19..." },
+                    "message": "..."
+                },
+                "step181": {
+                    "add_node": { "id": "task20Title", "label": "Task 20..." },
+                    "message": "..."
+                },
+                "step182": {
+                    "add_node": { "id": "task21Title", "label": "Task 21..." },
+                    "message": "..."
+                },
+                "step183": {
+                    "add_node": { "id": "task22Title", "label": "Task 22..." },
+                    "message": "..."
+                },
+                "step184": {
+                    "add_node": { "id": "task23Title", "label": "Task 23..." },
+                    "message": "..."
+                },
+                "step185": {
+                    "add_node": { "id": "task24Title", "label": "Task 24..." },
+                    "message": "..."
+                },
+                "step186": {
+                    "add_node": { "id": "task25Title", "label": "Task 25..." },
+                    "message": "..."
+                },
+                "step187": {
+                    "add_node": { "id": "task26Title", "label": "Task 26..." },
+                    "message": "..."
+                },
+                "step188": {
+                    "add_node": { "id": "task27Title", "label": "Task 27..." },
+                    "message": "..."
+                },
+                "step189": {
+                    "add_node": { "id": "task28Title", "label": "Task 28..." },
+                    "message": "..."
+                },
+                "step190": {
+                    "add_node": { "id": "task29Title", "label": "Task 29..." },
+                    "message": "..."
+                },
+                "step191": {
+                    "add_node": { "id": "task30Title", "label": "Task 30..." },
+                    "message": "..."
+                },
+
+
+                "step192": {
+                    "select_path": [
+                        "task1Title", "task2Title", "task3Title", "task4Title", "task5Title", "task6Title", "task7Title", "task8Title", "task9Title", "task10Title",
+                        "task11Title", "task12Title", "task13Title", "task14Title", "task15Title", "task16Title", "task17Title", "task18Title", "task19Title", "task20Title",
+                        "task21Title", "task22Title", "task23Title", "task24Title", "task25Title", "task26Title", "task27Title", "task28Title", "task29Title", "task30Title"
+                    ],
+                    "message": "Selecting Task Titles for Focus"
+                },
+                "step193": {
+                    "copy_move_to_focus": null,
+                    "message": "Moving Task Titles to Focus Area"
+                },
+                "step194": {
+                    "straighten_path": null,
+                    "message": "Straightening Task Titles in Focus Area"
+                },
+                "step195": {
+                    "compress_path": null,
+                    "message": "Compressing Task Titles Path"
+                },
+                "step196": {
+                    "add_compressed_path_to_graph": null,
+                    "message": "Adding Compressed Task Titles Bar to Graph"
+                },
+
+
                 "step300": {
-                    "message": "Path script visualization of Design Tasks complete!"
+                    "message": "Design Tasks Path script visualization of Design Tasks complete!"
                 }
+            },
+            "gen_ui_script": {
+                "step1": { "reset": null, "message": "Start visualizing GenUI creation process." },
+                "step2": { "message": "Creating GenUI 1: Simple Weather App" },
+
+                "step3": { "add_node": { "id": "UI1_Title", "label": "Weather App", "type": "Title" }, "message": "Add title component: Weather App" },
+                "step4": { "add_node": { "id": "UI1_Button_Weather", "label": "Get Weather", "type": "Button" }, "message": "Add button: Get Weather" },
+                "step5": { "add_node": { "id": "UI1_Action_GetWeather", "label": "Action: Fetch Weather Data", "type": "Action" }, "message": "Add action: Fetch Weather Data" },
+                "step6": { "connect_nodes": { "node1": "UI1_Button_Weather", "node2": "UI1_Action_GetWeather" }, "message": "Connect button to action" },
+                "step7": { "add_node": { "id": "UI1_Display_Weather", "label": "Weather Display", "type": "Display" }, "message": "Add display area for weather info" },
+                "step8": { "connect_nodes": { "node1": "UI1_Action_GetWeather", "node2": "UI1_Display_Weather" }, "message": "Connect action to display" },
+                "step9": { "connect_nodes": { "node1": "UI1_Title", "node2": "UI1_Button_Weather" }, "message": "Layout: Title above button" },
+                "step10": { "connect_nodes": { "node1": "UI1_Button_Weather", "node2": "UI1_Display_Weather" }, "message": "Layout: Button above display" },
+
+                "step11": { "message": "GenUI 1 Created. Now creating GenUI 2: Volume Control" },
+
+                "step12": { "add_node": { "id": "UI2_Title", "label": "Volume Control", "type": "Title" }, "message": "Add title: Volume Control" },
+                "step13": { "add_node": { "id": "UI2_Slider_Volume", "label": "Volume Slider", "type": "Slider" }, "message": "Add slider: Volume Slider" },
+                "step14": { "add_node": { "id": "UI2_Action_SetVolume", "label": "Action: Set Volume Level", "type": "Action" }, "message": "Add action: Set Volume Level" },
+                "step15": { "connect_nodes": { "node1": "UI2_Slider_Volume", "node2": "UI2_Action_SetVolume" }, "message": "Connect slider to action" },
+                "step16": { "connect_nodes": { "node1": "UI2_Title", "node2": "UI2_Slider_Volume" }, "message": "Layout: Title above slider" },
+
+                "step17": { "message": "GenUI 2 Created. Creating GenUI 3: Dark Mode Switch" },
+
+                "step18": { "add_node": { "id": "UI3_Title", "label": "Dark Mode", "type": "Title" }, "message": "Add title: Dark Mode" },
+                "step19": { "add_node": { "id": "UI3_Switch_DarkMode", "label": "Dark Mode Switch", "type": "Switch" }, "message": "Add switch: Dark Mode Switch" },
+                "step20": { "add_node": { "id": "UI3_Action_ToggleDarkMode", "label": "Action: Toggle Dark Mode", "type": "Action" }, "message": "Add action: Toggle Dark Mode" },
+                "step21": { "connect_nodes": { "node1": "UI3_Switch_DarkMode", "node2": "UI3_Action_ToggleDarkMode" }, "message": "Connect switch to action" },
+                "step22": { "connect_nodes": { "node1": "UI3_Title", "node2": "UI3_Switch_DarkMode" }, "message": "Layout: Title above switch" },
+
+                "step23": { "message": "GenUI 3 Created. Creating GenUI 4: Food Ordering Buttons" },
+
+                "step24": { "add_node": { "id": "UI4_Title", "label": "Order Food", "type": "Title" }, "message": "Add title: Order Food" },
+                "step25": { "add_node": { "id": "UI4_Button_Pizza", "label": "Order Pizza", "type": "Button" }, "message": "Add button: Order Pizza" },
+                "step26": { "add_node": { "id": "UI4_Button_Burger", "label": "Order Burger", "type": "Button" }, "message": "Add button: Order Burger" },
+                "step27": { "add_node": { "id": "UI4_Action_OrderFood", "label": "Action: Place Food Order", "type": "Action" }, "message": "Add action: Place Food Order (Generic)" },
+                "step28": { "connect_nodes": { "node1": "UI4_Button_Pizza", "node2": "UI4_Action_OrderFood" }, "message": "Connect Pizza button to order action" },
+                "step29": { "connect_nodes": { "node1": "UI4_Button_Burger", "node2": "UI4_Action_OrderFood" }, "message": "Connect Burger button to order action" },
+                "step30": { "connect_nodes": { "node1": "UI4_Title", "node2": "UI4_Button_Pizza" }, "message": "Layout: Title above Pizza button" },
+                "step31": { "connect_nodes": { "node1": "UI4_Button_Pizza", "node2": "UI4_Button_Burger" }, "message": "Layout: Pizza button above Burger button" },
+
+
+                "step32": { "message": "GenUI 4 Created. Creating GenUI 5: Website Link and Logo" },
+
+                "step33": { "add_node": { "id": "UI5_Title", "label": "Company Info", "type": "Title" }, "message": "Add title: Company Info" },
+                "step34": { "add_node": { "id": "UI5_Image_Logo", "label": "Company Logo", "type": "Image" }, "message": "Add image: Company Logo" },
+                "step35": { "add_node": { "id": "UI5_Button_Website", "label": "Visit Website", "type": "Button" }, "message": "Add button: Visit Website" },
+                "step36": { "add_node": { "id": "UI5_Action_OpenWebsite", "label": "Action: Open Website URL", "type": "Action" }, "message": "Add action: Open Website URL" },
+                "step37": { "connect_nodes": { "node1": "UI5_Button_Website", "node2": "UI5_Action_OpenWebsite" }, "message": "Connect website button to open website action" },
+                "step38": { "connect_nodes": { "node1": "UI5_Title", "node2": "UI5_Image_Logo" }, "message": "Layout: Title above Logo" },
+                "step39": { "connect_nodes": { "node1": "UI5_Image_Logo", "node2": "UI5_Button_Website" }, "message": "Layout: Logo above Website button" },
+
+                "step40": { "message": "GenUI 5 Created. Creating GenUI 6: Stock Price Display" },
+
+                "step41": { "add_node": { "id": "UI6_Title", "label": "Stock Price", "type": "Title" }, "message": "Add title: Stock Price" },
+                "step42": { "add_node": { "id": "UI6_Display_Stock", "label": "Stock Price Display", "type": "Display" }, "message": "Add display: Stock Price Display" },
+                "step43": { "add_node": { "id": "UI6_Action_GetStock", "label": "Action: Fetch Stock Price", "type": "Action" }, "message": "Add action: Fetch Stock Price" },
+                "step44": { "connect_nodes": { "node1": "UI6_Action_GetStock", "node2": "UI6_Display_Stock" }, "message": "Connect action to display" },
+                "step45": { "connect_nodes": { "node1": "UI6_Title", "node2": "UI6_Display_Stock" }, "message": "Layout: Title above stock display" },
+                "step46": { "add_node": { "id": "UI6_Button_Refresh", "label": "Refresh Stock", "type": "Button" }, "message": "Add button: Refresh Stock" },
+                "step47": { "connect_nodes": { "node1": "UI6_Button_Refresh", "node2": "UI6_Action_GetStock" }, "message": "Connect refresh button to stock action" },
+                "step48": { "connect_nodes": { "node1": "UI6_Display_Stock", "node2": "UI6_Button_Refresh" }, "message": "Layout: Stock display above refresh button" },
+
+
+                "step49": { "message": "GenUI 6 Created. Creating GenUI 7: Simple Calculator Buttons" },
+
+                "step50": { "add_node": { "id": "UI7_Title", "label": "Calculator", "type": "Title" }, "message": "Add title: Calculator" },
+                "step51": { "add_node": { "id": "UI7_Button_1", "label": "1", "type": "Button" }, "message": "Add button: 1" },
+                "step52": { "add_node": { "id": "UI7_Button_2", "label": "2", "type": "Button" }, "message": "Add button: 2" },
+                "step53": { "add_node": { "id": "UI7_Button_Plus", "label": "+", "type": "Button" }, "message": "Add button: +" },
+                "step54": { "add_node": { "id": "UI7_Display_Calc", "label": "Calculation Display", "type": "Display" }, "message": "Add display: Calculation Display" },
+                "step55": { "add_node": { "id": "UI7_Action_CalcInput", "label": "Action: Calculator Input", "type": "Action" }, "message": "Add action: Calculator Input (Generic)" },
+                "step56": { "connect_nodes": { "node1": "UI7_Button_1", "node2": "UI7_Action_CalcInput" }, "message": "Connect button 1 to calc input" },
+                "step57": { "connect_nodes": { "node1": "UI7_Button_2", "node2": "UI7_Action_CalcInput" }, "message": "Connect button 2 to calc input" },
+                "step58": { "connect_nodes": { "node1": "UI7_Button_Plus", "node2": "UI7_Action_CalcInput" }, "message": "Connect button + to calc input" },
+                "step59": { "connect_nodes": { "node1": "UI7_Title", "node2": "UI7_Display_Calc" }, "message": "Layout: Title above calc display" },
+                "step60": { "connect_nodes": { "node1": "UI7_Display_Calc", "node2": "UI7_Button_1" }, "message": "Layout: Display above button 1" },
+                "step61": { "connect_nodes": { "node1": "UI7_Button_1", "node2": "UI7_Button_2" }, "message": "Layout: Button 1 beside Button 2 (Horizontal - simplified)" },
+                "step62": { "connect_nodes": { "node1": "UI7_Button_2", "node2": "UI7_Button_Plus" }, "message": "Layout: Button 2 beside Button Plus (Horizontal - simplified)" },
+
+
+                "step63": { "message": "GenUI 7 Created. Creating GenUI 8: Image Gallery with Navigation" },
+
+                "step64": { "add_node": { "id": "UI8_Title", "label": "Image Gallery", "type": "Title" }, "message": "Add title: Image Gallery" },
+                "step65": { "add_node": { "id": "UI8_Image_Display", "label": "Image Display Area", "type": "ImageDisplay" }, "message": "Add image display area" },
+                "step66": { "add_node": { "id": "UI8_Button_Next", "label": "Next Image", "type": "Button" }, "message": "Add button: Next Image" },
+                "step67": { "add_node": { "id": "UI8_Button_Prev", "label": "Previous Image", "type": "Button" }, "message": "Add button: Previous Image" },
+                "step68": { "add_node": { "id": "UI8_Action_NavImage", "label": "Action: Navigate Images", "type": "Action" }, "message": "Add action: Navigate Images" },
+                "step69": { "connect_nodes": { "node1": "UI8_Button_Next", "node2": "UI8_Action_NavImage" }, "message": "Connect Next button to nav action" },
+                "step70": { "connect_nodes": { "node1": "UI8_Button_Prev", "node2": "UI8_Action_NavImage" }, "message": "Connect Prev button to nav action" },
+                "step71": { "connect_nodes": { "node1": "UI8_Action_NavImage", "node2": "UI8_Image_Display" }, "message": "Connect nav action to image display" },
+                "step72": { "connect_nodes": { "node1": "UI8_Title", "node2": "UI8_Image_Display" }, "message": "Layout: Title above image display" },
+                "step73": { "connect_nodes": { "node1": "UI8_Image_Display", "node2": "UI8_Button_Next" }, "message": "Layout: Display above Next button (simplified)" },
+                "step74": { "connect_nodes": { "node1": "UI8_Button_Prev", "node2": "UI8_Button_Next" }, "message": "Layout: Prev button beside Next button (Horizontal - simplified)" },
+
+
+                "step75": { "message": "GenUI 8 Created. Creating GenUI 9: Temperature Slider with Display" },
+
+                "step76": { "add_node": { "id": "UI9_Title", "label": "Temperature Control", "type": "Title" }, "message": "Add title: Temperature Control" },
+                "step77": { "add_node": { "id": "UI9_Slider_Temp", "label": "Temperature Slider", "type": "Slider" }, "message": "Add slider: Temperature Slider" },
+                "step78": { "add_node": { "id": "UI9_Display_Temp", "label": "Temperature Display", "type": "Display" }, "message": "Add display: Temperature Display" },
+                "step79": { "add_node": { "id": "UI9_Action_SetTemp", "label": "Action: Set Temperature Value", "type": "Action" }, "message": "Add action: Set Temperature Value" },
+                "step80": { "connect_nodes": { "node1": "UI9_Slider_Temp", "node2": "UI9_Action_SetTemp" }, "message": "Connect slider to set temp action" },
+                "step81": { "connect_nodes": { "node1": "UI9_Action_SetTemp", "node2": "UI9_Display_Temp" }, "message": "Connect set temp action to display" },
+                "step82": { "connect_nodes": { "node1": "UI9_Title", "node2": "UI9_Slider_Temp" }, "message": "Layout: Title above temperature slider" },
+                "step83": { "connect_nodes": { "node1": "UI9_Slider_Temp", "node2": "UI9_Display_Temp" }, "message": "Layout: Slider above temperature display" },
+
+
+                "step84": { "message": "GenUI 9 Created. Creating GenUI 10: Simple To-Do List Input" },
+
+                "step85": { "add_node": { "id": "UI10_Title", "label": "To-Do List", "type": "Title" }, "message": "Add title: To-Do List" },
+                "step86": { "add_node": { "id": "UI10_Input_Task", "label": "Task Input Field", "type": "Input" }, "message": "Add input field: Task Input" },
+                "step87": { "add_node": { "id": "UI10_Button_Add", "label": "Add Task", "type": "Button" }, "message": "Add button: Add Task" },
+                "step88": { "add_node": { "id": "UI10_Display_Tasks", "label": "Tasks Display List", "type": "DisplayList" }, "message": "Add display list: Tasks" },
+                "step89": { "add_node": { "id": "UI10_Action_AddTask", "label": "Action: Add Task to List", "type": "Action" }, "message": "Add action: Add Task to List" },
+                "step90": { "connect_nodes": { "node1": "UI10_Button_Add", "node2": "UI10_Action_AddTask" }, "message": "Connect Add button to add task action" },
+                "step91": { "connect_nodes": { "node1": "UI10_Action_AddTask", "node2": "UI10_Display_Tasks" }, "message": "Connect add task action to display list" },
+                "step92": { "connect_nodes": { "node1": "UI10_Input_Task", "node2": "UI10_Action_AddTask" }, "message": "Connect input field to add task action (for input value)" },
+                "step93": { "connect_nodes": { "node1": "UI10_Title", "node2": "UI10_Input_Task" }, "message": "Layout: Title above input field" },
+                "step94": { "connect_nodes": { "node1": "UI10_Input_Task", "node2": "UI10_Button_Add" }, "message": "Layout: Input field above Add button" },
+                "step95": { "connect_nodes": { "node1": "UI10_Button_Add", "node2": "UI10_Display_Tasks" }, "message": "Layout: Add button above task display list" },
+
+
+                "step96": { "message": "GenUI 10 Created. Creating GenUI 11: Color Picker" },
+
+                "step97": { "add_node": { "id": "UI11_Title", "label": "Color Picker", "type": "Title" }, "message": "Add title: Color Picker" },
+                "step98": { "add_node": { "id": "UI11_Input_Color", "label": "Color Input", "type": "ColorInput" }, "message": "Add color input" },
+                "step99": { "add_node": { "id": "UI11_Display_ColorPreview", "label": "Color Preview", "type": "ColorDisplay" }, "message": "Add color preview display" },
+                "step100": { "add_node": { "id": "UI11_Action_SetColor", "label": "Action: Set Color Value", "type": "Action" }, "message": "Add action: Set Color Value" },
+                "step101": { "connect_nodes": { "node1": "UI11_Input_Color", "node2": "UI11_Action_SetColor" }, "message": "Connect color input to set color action" },
+                "step102": { "connect_nodes": { "node1": "UI11_Action_SetColor", "node2": "UI11_Display_ColorPreview" }, "message": "Connect set color action to color preview" },
+                "step103": { "connect_nodes": { "node1": "UI11_Title", "node2": "UI11_Input_Color" }, "message": "Layout: Title above color input" },
+                "step104": { "connect_nodes": { "node1": "UI11_Input_Color", "node2": "UI11_Display_ColorPreview" }, "message": "Layout: Color input above color preview" },
+
+
+                "step105": { "message": "GenUI 11 Created. Creating GenUI 12: Simple Text Display" },
+
+                "step106": { "add_node": { "id": "UI12_Title", "label": "Text Display", "type": "Title" }, "message": "Add title: Text Display" },
+                "step107": { "add_node": { "id": "UI12_Display_Text", "label": "Text Content Display", "type": "Display" }, "message": "Add display: Text Content" },
+                "step108": { "add_node": { "id": "UI12_Action_LoadText", "label": "Action: Load Text Data", "type": "Action" }, "message": "Add action: Load Text Data" },
+                "step109": { "connect_nodes": { "node1": "UI12_Action_LoadText", "node2": "UI12_Display_Text" }, "message": "Connect load text action to display" },
+                "step110": { "connect_nodes": { "node1": "UI12_Title", "node2": "UI12_Display_Text" }, "message": "Layout: Title above text display" },
+
+
+                "step111": { "message": "GenUI 12 Created. Creating GenUI 13: Progress Bar" },
+
+                "step112": { "add_node": { "id": "UI13_Title", "label": "Progress Indicator", "type": "Title" }, "message": "Add title: Progress Indicator" },
+                "step113": { "add_node": { "id": "UI13_Progress_Bar", "label": "Progress Bar", "type": "ProgressBar" }, "message": "Add progress bar" },
+                "step114": { "add_node": { "id": "UI13_Action_UpdateProgress", "label": "Action: Update Progress Value", "type": "Action" }, "message": "Add action: Update Progress" },
+                "step115": { "connect_nodes": { "node1": "UI13_Action_UpdateProgress", "node2": "UI13_Progress_Bar" }, "message": "Connect update progress action to progress bar" },
+                "step116": { "connect_nodes": { "node1": "UI13_Title", "node2": "UI13_Progress_Bar" }, "message": "Layout: Title above progress bar" },
+
+
+                "step117": { "message": "GenUI 13 Created. Creating GenUI 14: Date Picker" },
+
+                "step118": { "add_node": { "id": "UI14_Title", "label": "Date Selection", "type": "Title" }, "message": "Add title: Date Selection" },
+                "step119": { "add_node": { "id": "UI14_Input_Date", "label": "Date Input", "type": "DateInput" }, "message": "Add date input" },
+                "step120": { "add_node": { "id": "UI14_Action_SelectDate", "label": "Action: Get Selected Date", "type": "Action" }, "message": "Add action: Get Selected Date" },
+                "step121": { "connect_nodes": { "node1": "UI14_Input_Date", "node2": "UI14_Action_SelectDate" }, "message": "Connect date input to select date action" },
+                "step122": { "connect_nodes": { "node1": "UI14_Title", "node2": "UI14_Input_Date" }, "message": "Layout: Title above date input" },
+
+
+                "step123": { "message": "GenUI 14 Created. Creating GenUI 15: Time Picker" },
+
+                "step124": { "add_node": { "id": "UI15_Title", "label": "Time Selection", "type": "Title" }, "message": "Add title: Time Selection" },
+                "step125": { "add_node": { "id": "UI15_Input_Time", "label": "Time Input", "type": "TimeInput" }, "message": "Add time input" },
+                "step126": { "add_node": { "id": "UI15_Action_SelectTime", "label": "Action: Get Selected Time", "type": "Action" }, "message": "Add action: Get Selected Time" },
+                "step127": { "connect_nodes": { "node1": "UI15_Input_Time", "node2": "UI15_Action_SelectTime" }, "message": "Connect time input to select time action" },
+                "step128": { "connect_nodes": { "node1": "UI15_Title", "node2": "UI15_Input_Time" }, "message": "Layout: Title above time input" },
+
+
+                "step129": { "message": "GenUI 15 Created. Creating GenUI 16: Rating Stars" },
+
+                "step130": { "add_node": { "id": "UI16_Title", "label": "Rate this App", "type": "Title" }, "message": "Add title: Rate this App" },
+                "step131": { "add_node": { "id": "UI16_Rating_Stars", "label": "Star Rating", "type": "RatingStars" }, "message": "Add star rating component" },
+                "step132": { "add_node": { "id": "UI16_Action_SetRating", "label": "Action: Submit Rating Value", "type": "Action" }, "message": "Add action: Submit Rating" },
+                "step133": { "connect_nodes": { "node1": "UI16_Rating_Stars", "node2": "UI16_Action_SetRating" }, "message": "Connect rating stars to submit rating action" },
+                "step134": { "connect_nodes": { "node1": "UI16_Title", "node2": "UI16_Rating_Stars" }, "message": "Layout: Title above rating stars" },
+
+
+                "step135": { "message": "GenUI 16 Created. Creating GenUI 17: Dropdown Select" },
+
+                "step136": { "add_node": { "id": "UI17_Title", "label": "Select Option", "type": "Title" }, "message": "Add title: Select Option" },
+                "step137": { "add_node": { "id": "UI17_Select_Dropdown", "label": "Dropdown Options", "type": "Dropdown" }, "message": "Add dropdown select" },
+                "step138": { "add_node": { "id": "UI17_Action_GetSelection", "label": "Action: Get Dropdown Selection", "type": "Action" }, "message": "Add action: Get Dropdown Selection" },
+                "step139": { "connect_nodes": { "node1": "UI17_Select_Dropdown", "node2": "UI17_Action_GetSelection" }, "message": "Connect dropdown to get selection action" },
+                "step140": { "connect_nodes": { "node1": "UI17_Title", "node2": "UI17_Select_Dropdown" }, "message": "Layout: Title above dropdown" },
+
+
+                "step141": { "message": "GenUI 17 Created. Creating GenUI 18: Checkbox Group" },
+
+                "step142": { "add_node": { "id": "UI18_Title", "label": "Checkbox Choices", "type": "Title" }, "message": "Add title: Checkbox Choices" },
+                "step143": { "add_node": { "id": "UI18_Checkbox_Group", "label": "Checkbox Group", "type": "CheckboxGroup" }, "message": "Add checkbox group" },
+                "step144": { "add_node": { "id": "UI18_Action_GetCheckboxes", "label": "Action: Get Checkbox Selections", "type": "Action" }, "message": "Add action: Get Checkbox Selections" },
+                "step145": { "connect_nodes": { "node1": "UI18_Checkbox_Group", "node2": "UI18_Action_GetCheckboxes" }, "message": "Connect checkbox group to get selections action" },
+                "step146": { "connect_nodes": { "node1": "UI18_Title", "node2": "UI18_Checkbox_Group" }, "message": "Layout: Title above checkbox group" },
+
+                "step147": { "message": "GenUI 18 Created. Creating GenUI 19: Radio Button Group" },
+
+                "step148": { "add_node": { "id": "UI19_Title", "label": "Radio Options", "type": "Title" }, "message": "Add title: Radio Options" },
+                "step149": { "add_node": { "id": "UI19_Radio_Group", "label": "Radio Button Group", "type": "RadioButtonGroup" }, "message": "Add radio button group" },
+                "step150": { "add_node": { "id": "UI19_Action_GetRadioSelection", "label": "Action: Get Radio Button Selection", "type": "Action" }, "message": "Add action: Get Radio Button Selection" },
+                "step151": { "connect_nodes": { "node1": "UI19_Radio_Group", "node2": "UI19_Action_GetRadioSelection" }, "message": "Connect radio group to get selection action" },
+                "step152": { "connect_nodes": { "node1": "UI19_Title", "node2": "UI19_Radio_Group" }, "message": "Layout: Title above radio group" },
+
+
+                "step153": { "message": "GenUI 19 Created. Creating GenUI 20: File Upload Button" },
+
+                "step154": { "add_node": { "id": "UI20_Title", "label": "Upload File", "type": "Title" }, "message": "Add title: Upload File" },
+                "step155": { "add_node": { "id": "UI20_Button_Upload", "label": "File Upload Button", "type": "FileUploadButton" }, "message": "Add file upload button" },
+                "step156": { "add_node": { "id": "UI20_Action_UploadFile", "label": "Action: Handle File Upload", "type": "Action" }, "message": "Add action: Handle File Upload" },
+                "step157": { "connect_nodes": { "node1": "UI20_Button_Upload", "node2": "UI20_Action_UploadFile" }, "message": "Connect upload button to handle upload action" },
+                "step158": { "connect_nodes": { "node1": "UI20_Title", "node2": "UI20_Button_Upload" }, "message": "Layout: Title above upload button" },
+
+                "step159": { "message": "Compressing UI Titles for a toolbar-like representation..." },
+                "step160": { "select_path": ["UI1_Title", "UI2_Title", "UI3_Title", "UI4_Title", "UI5_Title", "UI6_Title", "UI7_Title", "UI8_Title", "UI9_Title", "UI10_Title", "UI11_Title", "UI12_Title", "UI13_Title", "UI14_Title", "UI15_Title", "UI16_Title", "UI17_Title", "UI18_Title", "UI19_Title", "UI20_Title"], "message": "Selecting all UI titles" },
+                "step161": { "copy_move_to_focus": null, "message": "Moving titles to focus area" },
+                "step162": { "straighten_path": null, "message": "Straightening titles in focus area" },
+                "step163": { "compress_path": null, "message": "Compressing straightened titles" },
+                "step164": { "add_compressed_path_to_graph": null, "message": "Adding compressed titles back to main graph as 'UI Titles Bar'" },
+
+
+                "step300": { "message": "GenUI Script Visualization Complete!" }
             }
-        }
         };
 
 
@@ -1445,7 +1784,17 @@
                 circle.setAttribute('data-node-id', node.id);
                 circle.classList.toggle('selected', selectedNodeIds.includes(node.id));
                 circle.addEventListener('click', () => onNodeClick(node.id));
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 20);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '0.8em');
+                text.setAttribute('fill', 'var(--text-color)');
+                text.textContent = node.label;
                 fragment.appendChild(circle);
+                fragment.appendChild(text);
+
             });
             focusNodes.forEach(node => {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1455,7 +1804,17 @@
                 circle.setAttribute('cy', node.y);
                 circle.setAttribute('r', 8);
                 circle.setAttribute('data-focus-node-id', node.id);
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 20);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '0.8em');
+                text.setAttribute('fill', 'green');
+                text.textContent = node.label;
+
                 fragment.appendChild(circle);
+                fragment.appendChild(text);
             });
 
 
@@ -1467,29 +1826,29 @@
             graphCanvas.appendChild(fragment);
         }
 
-        function createNode(x, y, id) {
+        function createNode(config) {
             const canvasRect = graphCanvas.getBoundingClientRect();
-            let calculatedX = x;
-            let calculatedY = y;
+            let calculatedX = config.x || Math.random() * graphCanvas.clientWidth;
+            let calculatedY = config.y || Math.random() * graphCanvas.clientHeight;
 
-            if (typeof x === 'string' && x.startsWith('center')) {
-                calculatedX = graphCanvas.clientWidth / 2 + parseInt(x.split('-')[1] || 0, 10);
-            } else if (typeof x === 'string' && x === 'center') {
+            if (typeof calculatedX === 'string' && calculatedX.startsWith('center')) {
+                calculatedX = graphCanvas.clientWidth / 2 + parseInt(calculatedX.split('-')[1] || 0, 10);
+            } else if (typeof calculatedX === 'string' && calculatedX === 'center') {
                 calculatedX = graphCanvas.clientWidth / 2;
             } else {
-                calculatedX = parseFloat(x);
+                calculatedX = parseFloat(calculatedX);
             }
 
-            if (typeof y === 'string' && y.startsWith('center')) {
-                calculatedY = graphCanvas.clientHeight / 2 + parseInt(y.split('-')[1] || 0, 10);
-            } else if (typeof y === 'string' && y === 'center') {
+            if (typeof calculatedY === 'string' && calculatedY.startsWith('center')) {
+                calculatedY = graphCanvas.clientHeight / 2 + parseInt(calculatedY.split('-')[1] || 0, 10);
+            } else if (typeof calculatedY === 'string' && calculatedY === 'center') {
                 calculatedY = graphCanvas.clientHeight / 2;
             } else {
-                calculatedY = parseFloat(y);
+                calculatedY = parseFloat(calculatedY);
             }
 
 
-            const node = { id: nextNodeId++, x: calculatedX, y: calculatedY };
+            const node = { id: config.id || `node-${nextNodeId++}`, x: calculatedX, y: calculatedY, label: config.label, type: config.type };
             nodes.push(node);
             renderGraph();
             return node.id.toString();
@@ -1555,7 +1914,7 @@
                     const angle = i * angleStep;
                     const x = centerX + currentRadius * Math.cos(angle);
                     const y = centerY + currentRadius * Math.sin(angle);
-                    createdNodeIds.push(createNode(x, y));
+                    createdNodeIds.push(createNode({ x: x, y: y }));
                 }
                 previousRingNodes = numNodes;
             });
@@ -1579,7 +1938,7 @@
                     let angle = (2 * Math.PI / nodesInRing) * i - (ring % 2 === 0 ? 0 : Math.PI / 6);
                     let x = centerX + nodeSpacing * ring * Math.cos(angle);
                     let y = centerY + nodeSpacing * ring * Math.sin(angle);
-                    createdNodeIds.push(createNode(x, y));
+                    createdNodeIds.push(createNode({ x: x, y: y }));
                 }
             }
             renderGraph();
@@ -1610,11 +1969,242 @@
             document.body.classList.toggle('light-mode', !darkMode);
         }
 
-        loadScript, executeStep, stepForward, stepBackward, playScript, scriptStep, stopPlaying, togglePlayPause, updateStepDisplay, selectPath, copyMovePathToFocus, positionFocusNodes, straightenPathInFocus, compressPathInFocus, addCompressedPathToGraph
+        function loadScript(scriptName) {
+            currentScript = scripts[scriptName];
+            if (currentScript) {
+                scriptSteps = Object.entries(currentScript).sort((a, b) => {
+                    const stepNumA = parseInt(a[0].substring(4));
+                    const stepNumB = parseInt(b[0].substring(4));
+                    return stepNumA - stepNumB;
+                });
+                currentStepIndex = -1;
+                resetGraph();
+                stopPlaying();
+                stepForward();
+                updateStepDisplay();
+            } else {
+                scriptSteps = [];
+                currentStepIndex = -1;
+                updateStepDisplay();
+                console.error('Script not found:', scriptName);
+            }
+        }
+
+        function executeStep(step) {
+            if (!step) return;
+            messageHistoryArray.push(step.message);
+            if (messageHistoryArray.length > 3) {
+                messageHistoryArray.shift();
+            }
+            updateMessageDisplay();
+
+            if (step.reset !== undefined && step.reset === null) {
+                resetGraph();
+            }
+            if (step.add_circular_rings) {
+                applyRingLayout(step.add_circular_rings);
+            }
+            if (step.add_triangular_grid) {
+                applyTriangularGridLayout(step.add_triangular_grid);
+            }
+            if (step.add_node) {
+                createNode(step.add_node);
+            }
+            if (step.remove_node !== undefined && step.remove_node === null) {
+                if (nodes.length > 0) {
+                    removeNode(nodes[nodes.length - 1].id);
+                }
+            }
+            if (step.connect_nodes) {
+                const node1Id = nodes.find(node => node.id == step.connect_nodes.node1);
+                const node2Id = nodes.find(node => node.id == step.connect_nodes.node2);
+                if (node1Id && node2Id) {
+                    createEdge(node1Id.id, node2Id.id);
+                }
+            }
+            if (step.select_path) {
+                selectPath(step.select_path);
+            }
+            if (step.copy_move_to_focus) {
+                copyMovePathToFocus();
+            }
+            if (step.straighten_path) {
+                straightenPathInFocus();
+            }
+            if (step.compress_path) {
+                compressPathInFocus();
+            }
+            if (step.add_compressed_path_to_graph) {
+                addCompressedPathToGraph();
+            }
+
+            renderGraph();
+        }
+
+        function stepForward() {
+            stopPlaying();
+            if (currentStepIndex < scriptSteps.length - 1) {
+                currentStepIndex++;
+                executeStep(scriptSteps[currentStepIndex][1]);
+                updateStepDisplay();
+            } else {
+                stopPlaying();
+                isPlaying = false;
+                playPauseButton.textContent = 'Play';
+            }
+        }
+
+        function stepBackward() {
+            stopPlaying();
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                executeStep(scriptSteps[currentStepIndex][1]);
+                updateStepDisplay();
+            } else if (currentStepIndex === 0) {
+                currentStepIndex--;
+                resetGraph();
+                updateStepDisplay();
+            }
+        }
+
+
+        function playScript() {
+            if (!isPlaying) {
+                isPlaying = true;
+                playPauseButton.textContent = 'Pause';
+                if (currentStepIndex >= scriptSteps.length - 1) {
+                    currentStepIndex = -1;
+                    resetGraph();
+                    updateStepDisplay();
+                }
+                playInterval = setInterval(() => {
+                    stepForward();
+                    if (currentStepIndex >= scriptSteps.length - 1) {
+                        stopPlaying();
+                    }
+                }, playSpeed);
+            } else {
+                stopPlaying();
+            }
+        }
+
+        function scriptStep() {
+        }
+
+        function stopPlaying() {
+            isPlaying = false;
+            playPauseButton.textContent = 'Play';
+            clearInterval(playInterval);
+        }
+
+        function togglePlayPause() {
+            if (isPlaying) {
+                stopPlaying();
+            } else {
+                playScript();
+            }
+        }
+
+        function updateStepDisplay() {
+            scriptStepDisplay.textContent = `Step: ${currentStepIndex + 1}/${scriptSteps.length > 0 ? scriptSteps.length : '-'}`;
+        }
+
+        function updateMessageDisplay() {
+            currentStepMessage.textContent = scriptSteps[currentStepIndex]?.[1]?.message || "";
+            currentStepMessage.classList.add('visible');
+            setTimeout(() => {
+                currentStepMessage.classList.remove('visible');
+            }, stepDelay - 100);
+
+            messageHistory.innerHTML = '';
+            messageHistoryArray.forEach((msg, index) => {
+                const textElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textElem.setAttribute('class', 'message-history');
+                textElem.setAttribute('x', '50%');
+                textElem.setAttribute('y', 80 + (index * 15));
+                textElem.textContent = msg;
+                messageHistory.appendChild(textElem);
+            });
+        }
+
+
+        function selectPath(pathIds) {
+            selectedNodeIds = [];
+            pathIds.forEach(id => {
+                const node = nodes.find(n => n.id === id);
+                if (node) {
+                    selectedNodeIds.push(node.id);
+                }
+            });
+            renderGraph();
+        }
+
+        function copyMovePathToFocus() {
+            resetFocusArea();
+            focusNodes = selectedNodeIds.map(nodeId => {
+                const originalNode = nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    return { ...originalNode, id: `focus-${nextFocusNodeId++}` };
+                }
+                return null;
+            }).filter(node => node);
+
+            focusEdges = [];
+            for (let i = 0; i < focusNodes.length - 1; i++) {
+                focusEdges.push({ id: `focus-edge-${nextFocusEdgeId++}`, node1Id: focusNodes[i].id, node2Id: focusNodes[i + 1].id });
+            }
+            positionFocusNodes();
+            renderGraph();
+        }
+
+        function positionFocusNodes() {
+            const focusRect = focusArea.getBoundingClientRect();
+            const startX = focusRect.x + 20;
+            const endX = focusRect.x + focusRect.width - 20;
+            const yPos = focusRect.y + focusRect.height / 2;
+
+            focusNodes.forEach((node, index) => {
+                node.y = yPos;
+                node.x = startX + (endX - startX) * (index / (focusNodes.length - 1 || 1));
+            });
+            renderGraph();
+        }
+
+
+        function straightenPathInFocus() {
+            positionFocusNodes();
+        }
+
+        function compressPathInFocus() {
+            if (focusNodes.length > 2) {
+                const firstNode = focusNodes[0];
+                const lastNode = focusNodes[focusNodes.length - 1];
+                resetFocusArea();
+                focusNodes = [firstNode, lastNode];
+                focusEdges = [{ id: `focus-edge-${nextFocusEdgeId++}`, node1Id: firstNode.id, node2Id: lastNode.id }];
+                positionFocusNodes();
+                renderGraph();
+            }
+        }
+
+        function addCompressedPathToGraph() {
+            if (focusNodes.length === 2) {
+                const startFocusNode = focusNodes[0];
+                const endFocusNode = focusNodes[1];
+
+                const startGraphNode = createNode({ x: startFocusNode.x, y: startFocusNode.y, label: startFocusNode.label + " Start", type: startFocusNode.type + "Start" });
+                const endGraphNode = createNode({ x: endFocusNode.x, y: endFocusNode.y, label: endFocusNode.label + " End", type: endFocusNode.type + "End" });
+                createEdge(startGraphNode, endGraphNode);
+                resetFocusArea();
+                renderGraph();
+            }
+        }
+
+
         darkModeToggle.addEventListener('click', toggleDarkMode);
         resetButton.addEventListener('click', resetGraph);
         addNodeButton.addEventListener('click', () => {
-            createNode(Math.random() * graphCanvas.clientWidth, Math.random() * graphCanvas.clientHeight);
+            createNode({ x: Math.random() * graphCanvas.clientWidth, y: Math.random() * graphCanvas.clientHeight });
         });
 
         removeNodeButton.addEventListener('click', () => {
@@ -1664,6 +2254,7 @@
                 stopPlaying();
                 playScript();
             }
+            speedLabel.textContent = `Animation Speed (${playSpeed}ms per step)`;
         });
 
 

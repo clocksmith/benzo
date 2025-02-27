@@ -29,6 +29,11 @@ Scripts are defined in JSON format. Each script is an object where keys represen
 *   `"connect_nodes": { "node1": node_id_1, "node2": node_id_2 }` - Connects node with ID `node_id_1` to node with ID `node_id_2`.
 *   `"add_circular_rings": [ring_size_1, ring_size_2, ...]` - Creates circular rings with the specified number of nodes in each ring.
 *   `"add_triangular_grid": number_of_rings` - Creates a triangular grid with the specified number of rings.
+*   `"select_path": [node_id_1, node_id_2, ...]` - Selects a set of nodes by their IDs to define a path.
+*   `"copy_move_to_focus": null` - Copies the currently selected path of nodes to the focus area.
+*   `"straighten_path": null` - Arranges the nodes in the focus area into a horizontal line.
+*   `"compress_path": null` - Reduces the path in the focus area to just the start and end nodes, effectively compressing the path.
+*   `"add_compressed_path_to_graph": null` - Adds a compressed path (an edge between the start and end nodes of the focused path) back to the main graph.
 
 **Example Script JSON:**
 

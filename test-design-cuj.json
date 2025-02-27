@@ -904,34 +904,7 @@
             "message": "Feedback Refined: 2"
         },
         "step163": {
-            "message": "Continuing to visualize remaining tasks... (steps 163-300+ will follow similar pattern for brevity)"
-        },
-        "step164": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step165": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step166": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step167": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step168": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step169": {
-            "add_node": null,
-            "message": "..."
-        },
-        "step300": {
-            "message": "Path script visualization of Design Tasks complete!"
+            "message": "Continuing to visualize remaining tasks... (done for demo)"
         }
     }
 }

@@ -131,7 +131,7 @@
         }
 
         .node.focus-node {
-            fill: indigo;
+            fill: lime;
         }
 
         .edge {
@@ -142,6 +142,7 @@
 
         .edge.focus-edge {
             stroke-dasharray: 5, 5;
+            fill: lime;
         }
 
 
@@ -287,7 +288,6 @@
             stroke-width: 1px;
         }
 
-
         #scriptControls {
             background-color: var(--script-control-bg);
             padding: 15px;
@@ -298,32 +298,36 @@
         #playbackControls {
             display: flex;
             justify-content: space-between;
-            gap: 5px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 12px;
+            margin-bottom: 12px;
         }
 
         #playbackControls button {
-            width: 30%;
             margin: 0;
         }
 
         #speedControl label {
             display: block;
-            margin-bottom: 5px;
-            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        #speedSlider {
+            appearance: none;
+            height: 4px;
+            border: none;
         }
 
         #templatesSection>div,
         #graphActionsSection>div {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         #templatesSection h3,
         #graphActionsSection h3,
         #scriptControls h3 {
             color: var(--section-title-color);
-            text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-size: 1.1em;
         }
 
@@ -358,7 +362,7 @@
                 <button id="stepForwardButton">Next</button>
             </div>
             <div id="speedControl">
-                <label id="speedLabel" for="speedSlider">Animation Speed (ms per step)</label>
+                <label id="speedLabel" for="speedSlider">Speed (ms per step)</label>
                 <input type="range" id="speedSlider" min="100" max="2000" value="500" step="50">
             </div>
             <span id="scriptStepDisplay">Step: -</span>
@@ -389,17 +393,16 @@
     <div id="canvas-container">
         <div id="observatory">
             <svg id="observatorySvg" width="100%" height="100%">
-                <text id="currentStepMessage" class="step-message" x="50%" y="10"></text>
-                <g id="messageHistory"></g>
+                <!-- Observatory content will be rendered here -->
             </svg>
         </div>
 
         <div id="graphCanvas">
-            <svg width="100%" height="100%">
+            <svg id="mainSvg" width="100%" height="100%">
+                <!-- Graph content will be rendered here -->
             </svg>
         </div>
     </div>
-
 
     <script>
         const graphCanvas = document.getElementById('graphCanvas');
@@ -422,9 +425,7 @@
         const speedLabel = document.getElementById('speedLabel');
         const scriptStepDisplay = document.getElementById('scriptStepDisplay');
         const observatorySvg = document.getElementById('observatorySvg');
-
-        let currentStepMessage = document.getElementById('currentStepMessage');
-        let messageHistory = document.getElementById('messageHistory');
+        const mainSvg = document.getElementById('mainSvg');
 
         let nodes = [];
         let edges = [];
@@ -446,23 +447,11 @@
         let stepDelay = 500;
         let messageHistoryArray = [];
         let selectedNodeIdForConnection = null;
+        let currentStepMessage;
+        let messageHistory;
 
         const scripts = {
-            "ring_script": {
-                "step1": { "reset": null, "message": "Start with a clean slate" },
-                "step2": { "add_circular_rings": [6], "message": "Adding a ring of 6 nodes" },
-                "step3": { "add_node": null, "message": "Adding two individual nodes" },
-                "step4": { "add_node": null, "message": " " },
-                "step5": { "connect_nodes": { "node1": "0", "node2": "1" }, "message": "Connecting the first two nodes" }
-            },
-            "grid_script": {
-                "step1": { "reset": null, "message": "Resetting for grid script" },
-                "step2": { "add_triangular_grid": 3, "message": "Creating a triangular grid of 3 rings" },
-                "step3": { "add_node": null, "message": "Adding and removing a node" },
-                "step4": { "remove_node": null, "message": " " },
-                "step5": { "connect_nodes": { "node1": "5", "node2": "6" }, "message": "Connecting nodes in the grid" }
-            },
-            "path_script": {
+            "ring_demo": {
                 "step1": { "reset": null, "message": "Reset graph for path script" },
                 "step2": { "add_circular_rings": [8], "message": "Adding initial ring" },
                 "step3": { "connect_nodes": { "node1": "node-0", "node2": "node-1" }, "message": "Connect 0 and 1" },
@@ -478,29 +467,332 @@
                 "step13": { "connect_nodes": { "node1": "node-4", "node2": "node-6" }, "message": " " },
                 "step14": { "connect_nodes": { "node1": "node-6", "node2": "node-0" }, "message": " " },
                 "step15": { "select_path": ["node-0", "node-1", "node-2", "node-3", "node-4", "node-5", "node-6", "node-7"], "message": "Selecting the ring path" },
-                "step16": { "copy_move_to_focus": null, "message": "Copying ring path to focus area" },
-                "step17": { "straighten_path": null, "message": "Straightening the ring path" },
-                "step18": { "compress_path": null, "message": "Compressing the straightened path" },
+                "step16": { "copy_move_to_focus": null, "message": "Copying ring path to observatory" },
+                "step17": { "straighten_path": null, "message": "Straightening the ring path in observatory" },
+                "step18": { "compress_path": null, "message": "Compressing the straightened path in observatory" },
                 "step19": { "add_compressed_path_to_graph": null, "message": "Adding compressed path back to main graph" },
                 "step20": { "select_path": ["node-0", "node-2", "node-4", "node-6"], "message": "Selecting diagonal path" },
-                "step21": { "copy_move_to_focus": null, "message": "Copying diagonal path to focus area" },
-                "step22": { "straighten_path": null, "message": "Straightening diagonal path in focus" },
-                "step23": { "compress_path": null, "message": "Compressing diagonal path" },
+                "step21": { "copy_move_to_focus": null, "message": "Copying diagonal path to observatory" },
+                "step22": { "straighten_path": null, "message": "Straightening diagonal path in observatory" },
+                "step23": { "compress_path": null, "message": "Compressing diagonal path in observatory" },
                 "step24": { "add_compressed_path_to_graph": null, "message": "Adding diagonal compressed path to graph" },
                 "step25": { "select_path": ["node-1", "node-3", "node-5", "node-7"], "message": "Selecting other diagonal path" },
-                "step26": { "copy_move_to_focus": null, "message": "Copying other diagonal path to focus area" },
-                "step27": { "straighten_path": null, "message": "Straightening other diagonal path" },
-                "step28": { "compress_path": null, "message": "Compressing other diagonal path" },
+                "step26": { "copy_move_to_focus": null, "message": "Copying other diagonal path to observatory" },
+                "step27": { "straighten_path": null, "message": "Straightening other diagonal path in observatory" },
+                "step28": { "compress_path": null, "message": "Compressing other diagonal path in observatory" },
                 "step29": { "add_compressed_path_to_graph": null, "message": "Adding compressed other diagonal path to graph" },
                 "step30": { "message": "Path script complete!" }
             },
-        };
+            "grid_demo": {
+                "step1": { "reset": null, "message": "Reset graph for path2 script" },
+                "step2": { "add_triangular_grid": 3, "message": "Adding initial triangular grid" },
+                "step3": { "connect_nodes": { "node1": "node-0", "node2": "node-1" }, "message": "Connect 0 and 1" },
+                "step4": { "connect_nodes": { "node1": "node-1", "node2": "node-2" }, "message": "Connect 1 and 2" },
+                "step5": { "connect_nodes": { "node1": "node-2", "node2": "node-3" }, "message": "Connect 2 and 3" },
+                "step6": { "connect_nodes": { "node1": "node-3", "node2": "node-4" }, "message": "Connect 3 and 4" },
+                "step7": { "connect_nodes": { "node1": "node-4", "node2": "node-5" }, "message": "Connect 4 and 5" },
+                "step8": { "connect_nodes": { "node1": "node-5", "node2": "node-0" }, "message": "Connect 5 and 0" },
+                "step9": { "select_path": ["node-0", "node-1", "node-2", "node-3", "node-4", "node-5"], "message": "Selecting the outer ring" },
+                "step10": { "copy_move_to_focus": null, "message": "Copying ring to observatory" },
+                "step11": { "straighten_path": null, "message": "Straightening the ring in observatory" },
+                "step12": { "add_compressed_path_to_graph": null, "message": "Adding straightened path back to main graph" },
+                "step13": { "connect_nodes": { "node1": "node-6", "node2": "node-7" }, "message": "Connect 6 and 7" },
+                "step14": { "connect_nodes": { "node1": "node-7", "node2": "node-8" }, "message": "Connect 7 and 8" },
+                "step15": { "connect_nodes": { "node1": "node-8", "node2": "node-9" }, "message": "Connect 8 and 9" },
+                "step16": { "connect_nodes": { "node1": "node-9", "node2": "node-10" }, "message": "Connect 9 and 10" },
+                "step17": { "connect_nodes": { "node1": "node-10", "node2": "node-11" }, "message": "Connect 10 and 11" },
+                "step18": { "connect_nodes": { "node1": "node-11", "node2": "node-6" }, "message": "Connect 11 and 6" },
+                "step19": { "message": "Path2 script complete!" }
+            },
+            "design_cuj_path": {
+                "step1": { "reset": null, "message": "Resetting graph to visualize Design Task JSON" },
+                "step2": { "add_triangular_grid": 5, "message": "Building a triangular grid.  Nodes will represent start/end points of CUJs." },
+                "step3": { "message": "Mapping CUJ start/end points to grid nodes.  Edges will represent potential solutions." },
 
+                // CUJ: identify_font_from_image
+                "step4": { "connect_nodes": { "node1": "node-0", "node2": "node-1" }, "message": "CUJ: Identify Font (Manual).  Connecting start (node-0) and end (node-1) nodes." },
+                "step5": { "connect_nodes": { "node1": "node-0", "node2": "node-2" }, "message": "CUJ: Identify Font (Agent). Connecting start (node-0) and end (node-2) nodes." },
+
+                // CUJ: convert_svg_to_optimized_raster
+                "step6": { "connect_nodes": { "node1": "node-3", "node2": "node-4" }, "message": "CUJ: Convert SVG (Manual). Connecting start (node-3) and end (node-4) nodes." },
+                "step7": { "connect_nodes": { "node1": "node-3", "node2": "node-5" }, "message": "CUJ: Convert SVG (Script). Connecting start (node-3) and end (node-5) nodes." },
+                "step8": { "connect_nodes": { "node1": "node-3", "node2": "node-6" }, "message": "CUJ: Convert SVG (Agent). Connecting start (node-3) and end (node-6) nodes." },
+
+                // CUJ: animate_svg_icons_basic_effects
+                "step9": { "connect_nodes": { "node1": "node-7", "node2": "node-8" }, "message": "CUJ: Animate SVG Icons (Manual). Connecting start (node-7) and end (node-8) nodes." },
+                "step10": { "connect_nodes": { "node1": "node-7", "node2": "node-9" }, "message": "CUJ: Animate SVG Icons (Agent). Connecting start (node-7) and end (node-9) nodes." },
+
+                // CUJ: generate_placeholder_content
+                "step11": { "connect_nodes": { "node1": "node-10", "node2": "node-11" }, "message": "CUJ: Generate Placeholder (Manual).  Connecting start (node-10) and end (node-11) nodes." },
+                "step12": { "connect_nodes": { "node1": "node-10", "node2": "node-12" }, "message": "CUJ: Generate Placeholder (LLM Text). Connecting start (node-10) and end (node-12) nodes." },
+                "step13": { "connect_nodes": { "node1": "node-10", "node2": "node-13" }, "message": "CUJ: Generate Placeholder (AI Image). Connecting start (node-10) and end (node-13) nodes." },
+
+                // CUJ: extract_colors_from_style_guide
+                "step14": { "connect_nodes": { "node1": "node-14", "node2": "node-15" }, "message": "CUJ: Extract Colors (Manual). Connecting start (node-14) and end (node-15) nodes." },
+                "step15": { "connect_nodes": { "node1": "node-14", "node2": "node-16" }, "message": "CUJ: Extract Colors (Agent). Connecting start (node-14) and end (node-16) nodes." },
+
+                // More CUJs will be added later...
+
+                "step16": { "message": "Initial CUJ connections established.  Preparing for scale visualization." },
+
+                "step17": { "select_path": ["node-0", "node-3", "node-7", "node-10", "node-14"], "message": "Selecting start nodes of CUJs for scale title creation." },
+
+                "step18": { "copy_move_to_focus": null, "message": "Copying selected start nodes to the observatory." },
+                "step19": { "straighten_path": null, "message": "Straightening the copied nodes in the observatory." },
+                // Don't compress, we'll re-use this straight line.
+                "step20": { "add_node": { x: "center-150", y: "center-250" }, "message": "Adding 'Time Scale' title node." },
+                "step21": { "connect_nodes": { "node1": "node-20", "node2": "focus-0" }, "message": "Connecting 'Time Scale' to the first focus node." },
+                "step22": { "add_node": { x: "center", y: "center-250" }, "message": "Adding 'Pain Level Scale' title node." },
+                "step23": { "connect_nodes": { "node1": "node-21", "node2": "focus-1" }, "message": "Connecting 'Pain Level Scale' title to the second focus node" },
+                "step24": { "add_node": { x: "center+150", y: "center-250" }, "message": "Adding 'Complexity Scale' title node." },
+                "step25": { "connect_nodes": { "node1": "node-22", "node2": "focus-2" }, "message": "Connecting 'Complexity Scale' title to third focus node." },
+                "step26": { "add_node": { x: "center+300", y: "center-250" }, "message": "Adding 'Feedback Initial Scale' title node." },
+                "step27": { "connect_nodes": { "node1": "node-23", "node2": "focus-3" }, "message": "Connecting 'Feedback Initial Scale' title to fourth focus node." },
+                "step28": { "add_node": { x: "center+450", y: "center-250" }, "message": "Adding 'Feedback Refined Scale' title node." },
+                "step29": { "connect_nodes": { "node1": "node-24", "node2": "focus-4" }, "message": "Connecting 'Feedback Refined Scale' title to fifth focus node." },
+
+
+                "step30": { "message": "Scales added and connected.  Preparing to add more CUJs." },
+
+                // CUJ: resize_crop_images_bulk
+                "step31": { "add_node": {}, "message": "Adding start node for 'Resize/Crop Images (Manual)' CUJ." },
+                "step32": { "add_node": {}, "message": "Adding end node for 'Resize/Crop Images (Manual)' CUJ." },
+                "step33": { "connect_nodes": { "node1": "node-25", "node2": "node-26" }, "message": "Connecting nodes for 'Resize/Crop Images (Manual)' CUJ." },
+                "step34": { "add_node": {}, "message": "Adding end node for 'Resize/Crop Images (Agent)' CUJ." },
+                "step35": { "connect_nodes": { "node1": "node-25", "node2": "node-27" }, "message": "Connecting nodes for 'Resize/Crop Images (Agent)' CUJ." },
+
+                // CUJ: generate_code_snippets_basic_ui
+                "step36": { "add_node": {}, "message": "Adding start node for 'Generate Code Snippets (Manual)' CUJ." },
+                "step37": { "add_node": {}, "message": "Adding end node for 'Generate Code Snippets (Manual)' CUJ." },
+                "step38": { "connect_nodes": { "node1": "node-28", "node2": "node-29" }, "message": "Connecting nodes for 'Generate Code Snippets (Manual)' CUJ." },
+                "step39": { "add_node": {}, "message": "Adding end node for 'Generate Code Snippets (Agent)' CUJ." },
+                "step40": { "connect_nodes": { "node1": "node-28", "node2": "node-30" }, "message": "Connecting nodes for 'Generate Code Snippets (Agent)' CUJ." },
+
+                // CUJ: find_replace_text_figma_files
+                "step41": { "add_node": {}, "message": "Adding start node for 'Find/Replace Text (Manual)' CUJ." },
+                "step42": { "add_node": {}, "message": "Adding end node for 'Find/Replace Text (Manual)' CUJ." },
+                "step43": { "connect_nodes": { "node1": "node-31", "node2": "node-32" }, "message": "Connecting nodes for 'Find/Replace Text (Manual)' CUJ." },
+                "step44": { "add_node": {}, "message": "Adding end node for 'Find/Replace Text (Plugin)' CUJ." },
+                "step45": { "connect_nodes": { "node1": "node-31", "node2": "node-33" }, "message": "Connecting nodes for 'Find/Replace Text (Plugin)' CUJ." },
+
+                // CUJ: organize_figma_layers_auto_group
+                "step46": { "add_node": {}, "message": "Adding start node for 'Organize Figma Layers (Manual)'" },
+                "step47": { "add_node": {}, "message": "Adding end node for 'Organize Figma Layers (Manual)'" },
+                "step48": { "connect_nodes": { "node1": "node-34", "node2": "node-35" }, "message": "Connecting nodes for 'Organize Figma Layers (Manual)'." },
+                "step49": { "add_node": {}, "message": "Adding end node for 'Organize Figma Layers (Plugin/Agent)'" },
+                "step50": { "connect_nodes": { "node1": "node-34", "node2": "node-36" }, "message": "Connecting nodes for 'Organize Figma Layers (Plugin/Agent)'." },
+
+                // CUJ: generate_alt_text_suggestions
+                "step51": { "add_node": {}, "message": "Adding start node for 'Generate Alt Text (Manual)'" },
+                "step52": { "add_node": {}, "message": "Adding end node for 'Generate Alt Text (Manual)'" },
+                "step53": { "connect_nodes": { "node1": "node-37", "node2": "node-38" }, "message": "Connecting nodes for 'Generate Alt Text (Manual)'." },
+                "step54": { "add_node": {}, "message": "Adding end node for 'Generate Alt Text (LLM Agent)'" },
+                "step55": { "connect_nodes": { "node1": "node-37", "node2": "node-39" }, "message": "Connecting nodes for 'Generate Alt Text (LLM Agent)'. " },
+
+                // CUJ: create_sticker_sheet_icon_library
+                "step56": { "add_node": {}, "message": "Adding start node for 'Create Sticker Sheet (Manual)'" },
+                "step57": { "add_node": {}, "message": "Adding end node for 'Create Sticker Sheet (Manual)'" },
+                "step58": { "connect_nodes": { "node1": "node-40", "node2": "node-41" }, "message": "Connecting start and end nodes for 'Create Sticker Sheet (Manual)'." },
+                "step59": { "add_node": {}, "message": "Adding end node for 'Create Sticker Sheet (Tool)'" },
+                "step60": { "connect_nodes": { "node1": "node-40", "node2": "node-42" }, "message": "Connecting start and end nodes for 'Create Sticker Sheet (Tool)'. " },
+
+                // CUJ: create_figma_file_from_engineer_prototype
+                "step61": { "add_node": {}, "message": "Adding start node for 'Create Figma from Prototype (Manual)'" },
+                "step62": { "add_node": {}, "message": "Adding end node for 'Create Figma from Prototype (Manual)'" },
+                "step63": { "connect_nodes": { "node1": "node-43", "node2": "node-44" }, "message": "Connecting start and end nodes 'Create Figma from Prototype (Manual)'." },
+                "step64": { "add_node": {}, "message": "Adding end node for 'Create Figma from Prototype (Tool)'" },
+                "step65": { "connect_nodes": { "node1": "node-43", "node2": "node-45" }, "message": "Connecting start and end nodes for 'Create Figma from Prototype (Tool)'. " },
+
+                // CUJ: generate_developer_specs_from_figma
+                "step66": { "add_node": {}, "message": "Adding start node for 'Generate Developer Specs (Manual)'" },
+                "step67": { "add_node": {}, "message": "Adding end node for 'Generate Developer Specs (Manual)'" },
+                "step68": { "connect_nodes": { "node1": "node-46", "node2": "node-47" }, "message": "Connecting nodes for 'Generate Developer Specs (Manual)'." },
+                "step69": { "add_node": {}, "message": "Adding end node for 'Generate Developer Specs (Plugin)'" },
+                "step70": { "connect_nodes": { "node1": "node-46", "node2": "node-48" }, "message": "Connecting nodes for 'Generate Developer Specs (Plugin)'. " },
+
+                // CUJ: create_basic_prototype_static_screens
+                "step71": { "add_node": {}, "message": "Adding start node for 'Create Basic Prototype (Manual)'" },
+                "step72": { "add_node": {}, "message": "Adding end node for 'Create Basic Prototype (Manual)'" },
+                "step73": { "connect_nodes": { "node1": "node-49", "node2": "node-50" }, "message": "Connecting start and end nodes for 'Create Basic Prototype (Manual)'." },
+                "step74": { "add_node": {}, "message": "Adding end node for 'Create Basic Prototype (AI-Assisted)'" },
+                "step75": { "connect_nodes": { "node1": "node-49", "node2": "node-51" }, "message": "Connecting start and end nodes for 'Create Basic Prototype (AI-Assisted)'. " },
+
+                // CUJ: generate_social_media_assets_templates
+                "step76": { "add_node": {}, "message": "Adding start node for 'Generate Social Media Assets (Manual)'" },
+                "step77": { "add_node": {}, "message": "Adding end node for 'Generate Social Media Assets (Manual)'" },
+                "step78": { "connect_nodes": { "node1": "node-52", "node2": "node-53" }, "message": "Connecting start and end nodes for 'Generate Social Media Assets (Manual)'." },
+                "step79": { "add_node": {}, "message": "Adding end node for 'Generate Social Media Assets (Tool/Agent)'" },
+                "step80": { "connect_nodes": { "node1": "node-52", "node2": "node-54" }, "message": "Connecting start and end nodes for 'Generate Social Media Assets (Tool/Agent)'. " },
+
+                "step81": { "message": "More CUJs added.  Continuing to connect more CUJs..." },
+
+                // CUJ: translate_design_text_multiple_languages
+                "step82": { "add_node": {}, "message": "Adding start node for 'Translate Design Text (Manual)' CUJ." },
+                "step83": { "add_node": {}, "message": "Adding end node for 'Translate Design Text (Manual)' CUJ." },
+                "step84": { "connect_nodes": { "node1": "node-55", "node2": "node-56" }, "message": "Connecting nodes for 'Translate Design Text (Manual)' CUJ." },
+                "step85": { "add_node": {}, "message": "Adding end node for 'Translate Design Text (Tool)' CUJ." },
+                "step86": { "connect_nodes": { "node1": "node-55", "node2": "node-57" }, "message": "Connecting nodes for 'Translate Design Text (Tool)' CUJ." },
+
+                // CUJ: conduct_basic_accessibility_checks_figma
+                "step87": { "add_node": {}, "message": "Adding start node for 'Accessibility Checks (Manual)' CUJ." },
+                "step88": { "add_node": {}, "message": "Adding end node for 'Accessibility Checks (Manual)' CUJ." },
+                "step89": { "connect_nodes": { "node1": "node-58", "node2": "node-59" }, "message": "Connecting nodes for 'Accessibility Checks (Manual)' CUJ." },
+                "step90": { "add_node": {}, "message": "Adding end node for 'Accessibility Checks (Plugin)' CUJ." },
+                "step91": { "connect_nodes": { "node1": "node-58", "node2": "node-60" }, "message": "Connecting nodes for 'Accessibility Checks (Plugin)' CUJ." },
+
+                // ... (Add more CUJs in a similar pattern) ...
+
+                "step92": { "message": "Additional CUJs connected.  Preparing for another round of potential compression/reorganization." },
+
+                // Example of selecting nodes for another focus area operation (could be for different scales or task groups).
+                "step93": { "select_path": ["node-1", "node-2", "node-4", "node-5", "node-8", "node-9"], "message": "Selecting end nodes of several CUJs for analysis." },
+                "step94": { "copy_move_to_focus": null, "message": "Copying selected nodes to the observatory for further processing." },
+                "step95": { "straighten_path": null, "message": "Straightening the copied nodes in the observatory (e.g., for comparison)." },
+                // In a real script, you might *not* always compress.  Maybe you want to compare the spread.
+                //"step96": { "compress_path": null, "message": "Compressing the path in the observatory." },
+                "step97": { "add_node": { x: "center", y: "center+100" }, "message": "Adding a summary node for the analyzed CUJs in the main graph." },
+                "step98": { "connect_nodes": { "node1": "node-61", "node2": "focus-0" }, "message": "Connecting the summary node to the first focus node." },
+                "step99": { "connect_nodes": { "node1": "node-61", "node2": "focus-1" }, "message": "Connecting the summary node to the second focus node." },
+                // ... (Continue connecting to other focus nodes) ...
+
+                "step100": { "message": "Further CUJ analysis and connection. Adding new CUJs:" },
+                // CUJ: generate_slide_deck_figma_frames
+                "step101": { "add_node": {}, "message": "Adding start node for 'Generate Slide Deck (Manual)' CUJ." },
+                "step102": { "add_node": {}, "message": "Adding end node for 'Generate Slide Deck (Manual)' CUJ." },
+                "step103": { "connect_nodes": { "node1": "node-62", "node2": "node-63" }, "message": "Connecting nodes for 'Generate Slide Deck (Manual)' CUJ." },
+                "step104": { "add_node": {}, "message": "Adding end node for 'Generate Slide Deck (Plugin)' CUJ." },
+                "step105": { "connect_nodes": { "node1": "node-62", "node2": "node-64" }, "message": "Connecting nodes for 'Generate Slide Deck (Plugin)' CUJ." },
+
+                // CUJ: create_user_flow_diagram_figma_screens
+                "step106": { "add_node": {}, "message": "Adding start node for 'Create User Flow Diagram (Manual)' CUJ." },
+                "step107": { "add_node": {}, "message": "Adding end node for 'Create User Flow Diagram (Manual)' CUJ." },
+                "step108": { "connect_nodes": { "node1": "node-65", "node2": "node-66" }, "message": "Connecting nodes for 'Create User Flow Diagram (Manual)' CUJ." },
+                "step109": { "add_node": {}, "message": "Adding end node for 'Create User Flow Diagram (Tool)' CUJ." },
+                "step110": { "connect_nodes": { "node1": "node-65", "node2": "node-67" }, "message": "Connecting nodes for 'Create User Flow Diagram (Tool)' CUJ." },
+
+                // CUJ: extract_design_tokens_figma
+                "step111": { "add_node": {}, "message": "Adding start node for 'Extract Design Tokens (Manual)' CUJ." },
+                "step112": { "add_node": {}, "message": "Adding end node for 'Extract Design Tokens (Manual)' CUJ." },
+                "step113": { "connect_nodes": { "node1": "node-68", "node2": "node-69" }, "message": "Connecting nodes for 'Extract Design Tokens (Manual)' CUJ." },
+                "step114": { "add_node": {}, "message": "Adding end node for 'Extract Design Tokens (Plugin)' CUJ." },
+                "step115": { "connect_nodes": { "node1": "node-68", "node2": "node-70" }, "message": "Connecting nodes for 'Extract Design Tokens (Plugin)' CUJ." },
+
+                // ... (Continue adding more CUJs) ...
+
+                // Example: Another round of focus area operations.
+                "step116": { "select_path": ["node-11", "node-12", "node-13", "node-15", "node-16"], "message": "Selecting end nodes related to placeholder generation and color extraction." },
+                "step117": { "copy_move_to_focus": null, "message": "Copying selected nodes to the observatory." },
+                //No straighten or compress, instead add a new node and connect
+                "step118": { "add_node": { x: "center+100", y: "center+100" }, "message": "Adding a comparison node in the main graph." },
+                "step119": { "connect_nodes": { "node1": "node-71", "node2": "focus-5" }, "message": "Connecting the comparison node to focus node 5." },
+                "step120": { "connect_nodes": { "node1": "node-71", "node2": "focus-6" }, "message": "Connecting the comparison node to focus node 6." },
+                // ... (Connect to other relevant focus nodes)
+
+                // ... (Continue adding CUJs, performing focus operations, etc.) ...
+                // CUJ: prototype_figma_to_code
+                "step121": { "add_node": {}, "message": "Adding start node for 'Prototype to Code (Manual)' CUJ." },
+                "step122": { "add_node": {}, "message": "Adding end node for 'Prototype to Code (Manual)' CUJ." },
+                "step123": { "connect_nodes": { "node1": "node-72", "node2": "node-73" }, "message": "Connecting nodes for 'Prototype to Code (Manual)' CUJ." },
+                "step124": { "add_node": {}, "message": "Adding end node for 'Prototype to Code (LLM-Assisted)' CUJ." },
+                "step125": { "connect_nodes": { "node1": "node-72", "node2": "node-74" }, "message": "Connecting nodes for 'Prototype to Code (LLM-Assisted)' CUJ." },
+
+                // CUJ: presentation_figma_to_slides
+                "step126": { "add_node": {}, "message": "Adding start node for 'Presentation to Slides (Manual)' CUJ." },
+                "step127": { "add_node": {}, "message": "Adding end node for 'Presentation to Slides (Manual)' CUJ." },
+                "step128": { "connect_nodes": { "node1": "node-75", "node2": "node-76" }, "message": "Connecting nodes for 'Presentation to Slides (Manual)' CUJ." },
+                "step129": { "add_node": {}, "message": "Adding end node for 'Presentation to Slides (Live Link)' CUJ." },
+                "step130": { "connect_nodes": { "node1": "node-75", "node2": "node-77" }, "message": "Connecting nodes for 'Presentation to Slides (Live Link)' CUJ." },
+
+                // ... (Continue adding more CUJs) ...
+                "step131": { "select_path": ["node-73", "node-74", "node-76", "node-77"], "message": "select nodes for to code and slide handoff" },
+                "step132": { "copy_move_to_focus": null, "message": "copy and move  nodes  73 74, 76, 77 to focus" },
+                "step133": { "straighten_path": null, "message": "straightening path in focus" },
+                "step134": { "add_node": { x: "center", y: "center+250" }, "message": "Adding a comparison node in the main graph." },
+                "step135": { "connect_nodes": { "node1": "node-78", "node2": "focus-7" }, "message": "Connecting the comparison node to focus node 7." },
+                "step136": { "connect_nodes": { "node1": "node-78", "node2": "focus-8" }, "message": "Connecting the comparison node to focus node 8." },
+                "step137": { "connect_nodes": { "node1": "node-78", "node2": "focus-9" }, "message": "Connecting the comparison node to focus node 9." },
+                "step138": { "connect_nodes": { "node1": "node-78", "node2": "focus-10" }, "message": "Connecting the comparison node to focus node 10." },
+
+
+                // ... (Continue adding CUJs, performing focus operations, etc., up to at least step 200) ...
+                // CUJ: export_thoughts_drawings_to_figma
+                "step139": { "add_node": {}, "message": "Adding start node for 'Thoughts to Figma (Manual)' CUJ." },
+                "step140": { "add_node": {}, "message": "Adding end node for 'Thoughts to Figma (Manual)' CUJ." },
+                "step141": { "connect_nodes": { "node1": "node-79", "node2": "node-80" }, "message": "Connecting nodes for 'Thoughts to Figma (Manual)' CUJ." },
+                "step142": { "add_node": {}, "message": "Adding end node for 'Thoughts to Figma (Handwriting Recognition)' CUJ." },
+                "step143": { "connect_nodes": { "node1": "node-79", "node2": "node-81" }, "message": "Connecting nodes for 'Thoughts to Figma (Handwriting Recognition)' CUJ." },
+
+                // CUJ: design_to_production_code_iterative
+                "step144": { "add_node": {}, "message": "Adding start node for 'Design to Production Code (Manual)' CUJ." },
+                "step145": { "add_node": {}, "message": "Adding end node for 'Design to Production Code (Manual)' CUJ." },
+                "step146": { "connect_nodes": { "node1": "node-82", "node2": "node-83" }, "message": "Connecting nodes for 'Design to Production Code (Manual)' CUJ." },
+                "step147": { "add_node": {}, "message": "Adding end node for 'Design to Production Code (Integrated Platform)' CUJ." },
+                "step148": { "connect_nodes": { "node1": "node-82", "node2": "node-84" }, "message": "Connecting nodes for 'Design to Production Code (Integrated Platform)' CUJ." },
+
+                // CUJ: design_to_research_experiment_ab_test
+                "step149": { "add_node": {}, "message": "Adding start node for 'Design to A/B Test (Manual)' CUJ." },
+                "step150": { "add_node": {}, "message": "Adding end node for 'Design to A/B Test (Manual)' CUJ." },
+                "step151": { "connect_nodes": { "node1": "node-85", "node2": "node-86" }, "message": "Connecting nodes for 'Design to A/B Test (Manual)' CUJ." },
+                "step152": { "add_node": {}, "message": "Adding end node for 'Design to A/B Test (Tool Integration)' CUJ." },
+                "step153": { "connect_nodes": { "node1": "node-85", "node2": "node-87" }, "message": "Connecting nodes for 'Design to A/B Test (Tool Integration)' CUJ." },
+
+                // ... Continue adding and connecting CUJs and performing operations ...
+
+                "step154": { "select_path": ["node-80", "node-81", "node-83", "node-84", "node-86", "node-87"], "message": "Selecting end nodes for several CUJs to prepare for another focus area operation." },
+                "step155": { "copy_move_to_focus": null, "message": "Moving the newly selected nodes to the focus area for comparison/analysis." },
+                "step156": { "straighten_path": null, "message": "Straightening selected in focus" },
+
+                "step157": { "add_node": { x: "center-200", y: "center+100" }, "message": "adding new node" },
+                "step158": { "add_node": { x: "center+200", y: "center-100" }, "message": "adding new node" },
+                "step159": { "add_node": { x: "center-100", y: "center-50" }, "message": "adding new node" },
+                "step160": { "add_node": { x: "center-50", y: "center" }, "message": "adding new node" },
+                "step161": { "add_node": { x: "center-100", y: "center+50" }, "message": "adding new node" },
+                "step162": { "connect_nodes": { "node1": "node-88", "node2": "focus-11" }, "message": "Connecting the comparison node to focus node 11." },
+                "step163": { "connect_nodes": { "node1": "node-89", "node2": "focus-12" }, "message": "Connecting the comparison node to focus node 12." },
+                "step164": { "connect_nodes": { "node1": "node-90", "node2": "focus-13" }, "message": "Connecting the comparison node to focus node 13." },
+
+                // ... Continue up to at least step 200, adding CUJs, connections, and focus operations ...
+                "step165": { "add_node": {}, "message": "Adding start node" },
+                "step166": { "add_node": {}, "message": "Adding end node" },
+                "step167": { "connect_nodes": { "node1": "node-91", "node2": "node-92" }, "message": "connecting nodes" },
+                "step168": { "add_node": {}, "message": "Adding end node" },
+                "step169": { "connect_nodes": { "node1": "node-91", "node2": "node-93" }, "message": "connecting nodes" },
+                "step170": { "add_node": {}, "message": "Adding start node" },
+                "step171": { "add_node": {}, "message": "Adding end node" },
+                "step172": { "connect_nodes": { "node1": "node-94", "node2": "node-95" }, "message": "connecting nodes" },
+                "step173": { "add_node": {}, "message": "Adding end node" },
+                "step174": { "connect_nodes": { "node1": "node-94", "node2": "node-96" }, "message": "connecting nodes" },
+                "step175": { "add_node": {}, "message": "Adding start node" },
+                "step176": { "add_node": {}, "message": "Adding end node" },
+
+            }
+        }
+
+
+        function setupObservatory() {
+            observatorySvg.innerHTML = '';
+            const observatoryFragment = document.createDocumentFragment();
+
+            const currentStepMessageTextElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            currentStepMessageTextElem.setAttribute('id', 'currentStepMessage');
+            currentStepMessageTextElem.setAttribute('class', 'step-message');
+            currentStepMessageTextElem.setAttribute('x', '50%');
+            currentStepMessageTextElem.setAttribute('y', '10');
+            observatoryFragment.appendChild(currentStepMessageTextElem);
+
+            const messageHistoryGroupElem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            messageHistoryGroupElem.setAttribute('id', 'messageHistory');
+            observatoryFragment.appendChild(messageHistoryGroupElem);
+
+            observatorySvg.appendChild(observatoryFragment);
+
+            currentStepMessage = document.getElementById('currentStepMessage');
+            messageHistory = document.getElementById('messageHistory');
+        }
 
         function renderGraph() {
-            const svg = graphCanvas.querySelector('svg');
-            svg.innerHTML = '';
-            const fragment = document.createDocumentFragment();
+            mainSvg.innerHTML = '';
+            const mainFragment = document.createDocumentFragment();
 
             edges.forEach(edge => {
                 const node1 = nodes.find(node => node.id === edge.node1Id);
@@ -513,7 +805,7 @@
                     line.setAttribute('x2', node2.x);
                     line.setAttribute('y2', node2.y);
                     line.setAttribute('data-edge-id', edge.id);
-                    fragment.appendChild(line);
+                    mainFragment.appendChild(line);
                 }
             });
 
@@ -528,10 +820,19 @@
                     line.setAttribute('x2', node2.x);
                     line.setAttribute('y2', node2.y);
                     line.setAttribute('data-edge-id', edge.id);
-                    fragment.appendChild(line);
+                    mainFragment.appendChild(line);
                 }
             });
 
+            focusNodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('class', 'node focus-node');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', 8);
+                circle.setAttribute('data-focus-node-id', node.id);
+                mainFragment.appendChild(circle);
+            });
 
             nodes.forEach(node => {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -542,46 +843,16 @@
                 circle.setAttribute('data-node-id', node.id);
                 circle.classList.toggle('selected', selectedNodeIds.includes(node.id));
                 circle.addEventListener('click', () => onNodeClick(node.id));
-                fragment.appendChild(circle);
+                mainFragment.appendChild(circle);
             });
 
-            focusNodes.forEach(node => {
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('class', 'node focus-node');
-                circle.setAttribute('cx', node.x);
-                circle.setAttribute('cy', node.y);
-                circle.setAttribute('r', 8);
-                circle.setAttribute('data-focus-node-id', node.id);
-                fragment.appendChild(circle);
-            });
-            svg.appendChild(fragment);
-
-
-            observatorySvg.innerHTML = '';
-            const observatoryFragment = document.createDocumentFragment();
-            const currentStepMessageTextElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            currentStepMessageTextElem.setAttribute('id', 'currentStepMessage');
-            currentStepMessageTextElem.setAttribute('class', 'step-message');
-            currentStepMessageTextElem.setAttribute('x', '50%');
-            currentStepMessageTextElem.setAttribute('y', '10');
-            const messageHistoryGroupElem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            messageHistoryGroupElem.setAttribute('id', 'messageHistory');
-
-            observatoryFragment.appendChild(currentStepMessageTextElem);
-            observatoryFragment.appendChild(messageHistoryGroupElem);
-            observatorySvg.appendChild(observatoryFragment);
-
-
-            currentStepMessage = document.getElementById('currentStepMessage');
-            messageHistory = document.getElementById('messageHistory');
+            mainSvg.appendChild(mainFragment);
         }
-
 
         function createNode(config) {
             const canvasRect = graphCanvas.getBoundingClientRect();
             let calculatedX = config.x || Math.random() * graphCanvas.clientWidth;
             let calculatedY = config.y || Math.random() * (graphCanvas.clientHeight);
-
 
             if (typeof calculatedX === 'string' && calculatedX.startsWith('center')) {
                 calculatedX = graphCanvas.clientWidth / 2 + parseInt(calculatedX.split('-')[1] || 0, 10);
@@ -599,14 +870,12 @@
                 calculatedY = parseFloat(calculatedY);
             }
 
-
             const nodeId = config.id || `node-${nextNodeId++}`;
             const node = { id: nodeId, x: calculatedX, y: calculatedY, label: config.label, type: config.type };
             nodes.push(node);
             renderGraph();
             return nodeId;
         }
-
 
         function removeNode(nodeId) {
             nodes = nodes.filter(node => node.id !== nodeId);
@@ -616,11 +885,9 @@
 
         function createEdge(node1Id, node2Id) {
             if (!node1Id || !node2Id) {
-                console.error("Cannot create edge: node IDs are missing.", node1Id, node2Id);
                 return;
             }
             if (nodes.findIndex(n => n.id === node1Id) === -1 || nodes.findIndex(n => n.id === node2Id) === -1) {
-                console.error("Cannot create edge: one or both nodes do not exist.", node1Id, node2Id);
                 return;
             }
 
@@ -628,7 +895,6 @@
             edges.push(edge);
             renderGraph();
         }
-
 
         function removeEdge(edgeId) {
             edges = edges.filter(edge => edge.id !== edgeId);
@@ -651,6 +917,12 @@
                     selectedNodeIdForConnection = null;
                 }
             } else {
+                if (selectedNodeIds.includes(nodeId)) {
+                    selectedNodeIds = selectedNodeIds.filter(id => id !== nodeId);
+                } else {
+                    selectedNodeIds.push(nodeId);
+                }
+                renderGraph();
             }
         }
 
@@ -666,7 +938,6 @@
             selectedNodeIds = selectedNodeIds.filter(id => id !== nodeId);
             renderGraph();
         }
-
 
         function applyRingLayout(ringSizes) {
             nodes = [];
@@ -704,7 +975,6 @@
             return createdNodeIds;
         }
 
-
         function applyTriangularGridLayout(numRings) {
             nodes = [];
             edges = [];
@@ -730,7 +1000,6 @@
             return createdNodeIds;
         }
 
-
         function resetGraph() {
             nodes = [];
             edges = [];
@@ -748,13 +1017,11 @@
             nextFocusEdgeId = 0;
         }
 
-
         function toggleDarkMode() {
             darkMode = !darkMode;
             document.body.classList.toggle('light-mode', !darkMode);
             darkModeToggleContainer.classList.toggle('dark-mode', darkMode);
         }
-
 
         function loadScript(scriptName) {
             currentScript = scripts[scriptName];
@@ -769,13 +1036,12 @@
                 scriptSteps = [];
                 currentStepIndex = -1;
                 updateStepDisplay();
-                console.error('Script not found:', scriptName);
             }
         }
 
-
         function executeStep(step) {
             if (!step) return;
+            console.log("Executing step:", step);
 
             if (step.message) {
                 messageHistoryArray.push(step.message);
@@ -783,10 +1049,18 @@
                 updateMessageDisplay();
             }
 
-            if (step.reset !== undefined && step.reset === null) resetGraph();
-            if (step.add_circular_rings) applyRingLayout(step.add_circular_rings);
-            if (step.add_triangular_grid) applyTriangularGridLayout(step.add_triangular_grid);
-            if (step.add_node) createNode(step.add_node);
+            if (step.reset !== undefined && step.reset === null) {
+                resetGraph();
+            }
+            if (step.add_circular_rings) {
+                applyRingLayout(step.add_circular_rings);
+            }
+            if (step.add_triangular_grid) {
+                applyTriangularGridLayout(step.add_triangular_grid);
+            }
+            if (step.add_node) {
+                createNode(step.add_node);
+            }
             if (step.remove_node !== undefined && step.remove_node === null) {
                 if (nodes.length > 0) {
                     removeNode(nodes[nodes.length - 1].id);
@@ -797,15 +1071,24 @@
                 const node2Id = step.connect_nodes.node2;
                 createEdge(node1Id, node2Id);
             }
-            if (step.select_path) selectPath(step.select_path);
-            if (step.copy_move_to_focus) copyMovePathToFocus();
-            if (step.straighten_path) straightenPathInFocus();
-            if (step.compress_path) compressPathInFocus();
-            if (step.add_compressed_path_to_graph) addCompressedPathToGraph();
+            if (step.select_path) {
+                selectPath(step.select_path);
+            }
+            if (step.copy_move_to_focus) {
+                copyMovePathToFocus();
+            }
+            if (step.straighten_path) {
+                straightenPathInFocus();
+            }
+            if (step.compress_path) {
+                compressPathInFocus();
+            }
+            if (step.add_compressed_path_to_graph) {
+                addCompressedPathToGraph();
+            }
 
             renderGraph();
         }
-
 
         function stepForward() {
             stopPlaying();
@@ -834,7 +1117,9 @@
         }
 
         function playScript() {
-            if (!isPlaying) {
+            if (isPlaying) {
+                stopPlaying();
+            } else {
                 isPlaying = true;
                 playPauseButton.textContent = 'Pause';
                 if (currentStepIndex >= scriptSteps.length - 1) {
@@ -846,8 +1131,6 @@
                     stepForward();
                     if (currentStepIndex >= scriptSteps.length - 1) stopPlaying();
                 }, playSpeed);
-            } else {
-                stopPlaying();
             }
         }
 
@@ -865,27 +1148,33 @@
             }
         }
 
-
         function updateStepDisplay() {
             scriptStepDisplay.textContent = `Step: ${currentStepIndex + 1}/${scriptSteps.length > 0 ? scriptSteps.length : '-'}`;
         }
 
         function updateMessageDisplay() {
-            currentStepMessage.textContent = scriptSteps[currentStepIndex]?.[1]?.message || "";
-            currentStepMessage.classList.add('visible');
-            setTimeout(() => currentStepMessage.classList.remove('visible'), stepDelay - 100);
+            if (currentStepMessage) {
+                currentStepMessage.textContent = scriptSteps[currentStepIndex]?.[1]?.message || "";
+                currentStepMessage.classList.add('visible');
+                setTimeout(() => {
+                    if (currentStepMessage) {
+                        currentStepMessage.classList.remove('visible');
+                    }
+                }, stepDelay * 3);
+            }
 
-            messageHistory.innerHTML = '';
-            messageHistoryArray.forEach((msg, index) => {
-                const textElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                textElem.setAttribute('class', 'message-history');
-                textElem.setAttribute('x', '50%');
-                textElem.setAttribute('y', 40 + (index * 15));
-                textElem.textContent = msg;
-                messageHistory.appendChild(textElem);
-            });
+            if (messageHistory) {
+                messageHistory.innerHTML = '';
+                messageHistoryArray.forEach((msg, index) => {
+                    const textElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    textElem.setAttribute('class', 'message-history');
+                    textElem.setAttribute('x', '50%');
+                    textElem.setAttribute('y', 40 + (index * 15));
+                    textElem.textContent = msg;
+                    messageHistory.appendChild(textElem);
+                });
+            }
         }
-
 
         function selectPath(pathIds) {
             selectedNodeIds = [];
@@ -896,29 +1185,81 @@
             renderGraph();
         }
 
-
         function copyMovePathToFocus() {
             resetFocusArea();
-            focusNodes = selectedNodeIds.map(nodeId => {
-                const originalNode = nodes.find(n => n.id === nodeId);
-                if (originalNode) return { ...originalNode, id: `focus-${nextFocusNodeId++}` };
-                return null;
-            }).filter(node => node);
 
+            const graphCanvasRect = graphCanvas.getBoundingClientRect();
+            const observatoryRect = observatory.getBoundingClientRect();
+
+            // Create copies of selected nodes for the focus area
+            focusNodes = selectedNodeIds.map((nodeId, index) => {
+                const originalNode = nodes.find(n => n.id === nodeId);
+                if (originalNode) {
+                    return {
+                        ...originalNode, // Copy all properties from the original node
+                        id: `focus-${index}`, // Assign a unique ID for the focus node
+                        x: originalNode.x,     // initial positions
+                        y: originalNode.y      // initial positions
+                    };
+                }
+                return null; // Handle cases where the original node might not be found
+            }).filter(node => node); // Remove null entries (if any)
+
+
+            // Define target positions *before* the animation loop
+            const targetPositions = focusNodes.map((node, index) => {
+                const targetX = observatoryRect.left + 20 - graphCanvasRect.left + (observatoryRect.width - 40) * (index / (focusNodes.length - 1 || 1));
+                const targetY = observatoryRect.top + observatoryRect.height / 2 - graphCanvasRect.top;
+                return { x: targetX, y: targetY };
+            });
+
+            // Animate each node individually
+            focusNodes.forEach((node, index) => {
+                let startX = node.x; //  starting positions
+                let startY = node.y;
+                const targetX = targetPositions[index].x; //  target positions
+                const targetY = targetPositions[index].y;
+                let animationStartTime = null;
+
+
+                function animate(currentTime) {
+                    if (!animationStartTime) animationStartTime = currentTime;
+                    const elapsedTime = currentTime - animationStartTime;
+                    const progress = Math.min(1, elapsedTime / 500); // 500ms
+
+                    // Interpolate positions
+                    node.x = startX + (targetX - startX) * progress;
+                    node.y = startY + (targetY - startY) * progress;
+
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate); // Continue animation
+                    } else {
+                        // Final positions after animation
+                        node.x = targetX;
+                        node.y = targetY;
+                    }
+                    renderGraph(); // Re-render on EACH frame for EACH node
+                }
+
+
+                requestAnimationFrame(animate);
+            });
+
+            // Create focus edges based on focus nodes
             focusEdges = [];
             for (let i = 0; i < focusNodes.length - 1; i++) {
                 focusEdges.push({ id: `focus-edge-${nextFocusEdgeId++}`, node1Id: focusNodes[i].id, node2Id: focusNodes[i + 1].id });
             }
-            positionFocusNodes();
-            renderGraph();
+
         }
-
-
         function positionFocusNodes() {
-            const focusRect = observatory.getBoundingClientRect();
-            const startX = focusRect.x + 20;
-            const endX = focusRect.x + focusRect.width - 20;
-            const yPos = focusRect.y + focusRect.height / 2;
+            const observatoryRect = observatory.getBoundingClientRect();
+            const graphCanvasRect = graphCanvas.getBoundingClientRect();
+
+            const startX = observatoryRect.left + 20 - graphCanvasRect.left;
+            const endX = observatoryRect.right - 20 - graphCanvasRect.left;
+            const yPos = (observatoryRect.height / 2);
 
             focusNodes.forEach((node, index) => {
                 node.y = yPos;
@@ -926,7 +1267,6 @@
             });
             renderGraph();
         }
-
 
         function straightenPathInFocus() {
             positionFocusNodes();
@@ -944,24 +1284,39 @@
             }
         }
 
-
         function addCompressedPathToGraph() {
             if (focusNodes.length === 2) {
                 const startFocusNode = focusNodes[0];
                 const endFocusNode = focusNodes[1];
 
-                const startGraphNode = createNode({ x: startFocusNode.x, y: startFocusNode.y, label: startFocusNode.label + " Start", type: startFocusNode.type + "Start" });
-                const endGraphNode = createNode({ x: endFocusNode.x, y: endFocusNode.y, label: endFocusNode.label + " End", type: endFocusNode.type + "End" });
+                const startGraphNode = createNode({ x: startFocusNode.x + controls.getBoundingClientRect().width, y: startFocusNode.y + observatory.getBoundingClientRect().height, label: startFocusNode.label + " Start", type: startFocusNode.type + "Start" });
+                const endGraphNode = createNode({ x: endFocusNode.x + controls.getBoundingClientRect().width, y: endFocusNode.y + observatory.getBoundingClientRect().height, label: endFocusNode.label + " End", type: endFocusNode.type + "End" });
                 createEdge(startGraphNode, endGraphNode);
                 resetFocusArea();
                 renderGraph();
             }
         }
 
+        function populateScriptSelector() {
+            scriptSelector.innerHTML = '';
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select Script';
+            scriptSelector.appendChild(defaultOption);
+
+            for (const scriptName in scripts) {
+                if (scripts.hasOwnProperty(scriptName)) {
+                    const option = document.createElement('option');
+                    option.value = scriptName;
+                    option.textContent = scriptName;
+                    scriptSelector.appendChild(option);
+                }
+            }
+        }
 
         darkModeToggleContainer.addEventListener('click', toggleDarkMode);
-        resetButton.addEventListener('click', resetGraph);
-        addNodeButton.addEventListener('click', () => createNode({}));
+        resetButton.addEventListener('click', () => { resetGraph(); });
+        addNodeButton.addEventListener('click', () => { createNode({}); });
         removeNodeButton.addEventListener('click', () => { if (nodes.length > 0) removeNode(nodes[nodes.length - 1].id); });
         connectNodesButton.addEventListener('click', () => {
             isConnectingNodes = !isConnectingNodes;
@@ -976,41 +1331,36 @@
                 const ringSizes = JSON.parse(ringNodesInput.value);
                 if (Array.isArray(ringSizes) && ringSizes.every(Number.isInteger) && ringSizes.every(size => size > 0)) {
                     applyRingLayout(ringSizes);
-                } else {
-                    console.error('Invalid ring sizes input. Please use format like [6, 12].');
-                    alert('Invalid ring sizes input. Please use format like [6, 12].');
                 }
             } catch (e) {
-                console.error('Error parsing ring sizes input:', e);
-                alert('Error parsing ring sizes input. Please check the format.');
             }
         });
         addTriGridButton.addEventListener('click', () => {
             const numRings = parseInt(triGridRingsInput.value, 10);
             if (Number.isInteger(numRings) && numRings > 0) {
                 applyTriangularGridLayout(numRings);
-            } else {
-                console.error('Invalid triangular grid rings input. Please enter a positive integer.');
-                alert('Invalid triangular grid rings input. Please enter a positive integer.');
             }
         });
-        scriptSelector.addEventListener('change', (event) => loadScript(event.target.value));
-        stepForwardButton.addEventListener('click', stepForward);
-        stepBackwardButton.addEventListener('click', stepBackward);
-        playPauseButton.addEventListener('click', togglePlayPause);
+        scriptSelector.addEventListener('change', (event) => { loadScript(event.target.value); });
+        stepForwardButton.addEventListener('click', () => { stepForward(); });
+        stepBackwardButton.addEventListener('click', () => { stepBackward(); });
+        playPauseButton.addEventListener('click', () => { togglePlayPause(); });
         speedSlider.addEventListener('input', (event) => {
             playSpeed = parseInt(event.target.value, 10);
             stepDelay = playSpeed;
             if (isPlaying) { stopPlaying(); playScript(); }
-            speedLabel.textContent = `Animation Speed (${playSpeed}ms per step)`;
+            speedLabel.textContent = `Step Speed (${playSpeed}ms)`;
         });
 
-
+        populateScriptSelector();
+        setupObservatory();
         renderGraph();
         darkMode = true;
         updateStepDisplay();
-
+        scriptSelector.value = "ring_demo";
+        loadScript("ring_demo");
     </script>
+
 </body>
 
 </html>

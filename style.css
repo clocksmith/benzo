@@ -1,0 +1,335 @@
+:root {
+    --bg-color: black;
+    --text-color: white;
+    --control-bg-color: black;
+    --node-color: white;
+    --edge-color: white;
+    --switch-bg: black;
+    --switch-thumb-bg: white;
+    --switch-active-bg: white;
+    --button-bg: black;
+    --button-text-color: white;
+    --button-hover-bg: white;
+    --input-bg: black;
+    --input-text-color: white;
+    --input-border-color: white;
+    --section-title-color: white;
+    --slider-track-color: white;
+    --slider-thumb-color: white;
+    --message-color: white;
+}
+
+.light-mode {
+    --bg-color: white;
+    --text-color: black;
+    --control-bg-color: white;
+    --node-color: black;
+    --edge-color: black;
+    --switch-bg: white;
+    --switch-thumb-bg: black;
+    --switch-active-bg: black;
+    --button-bg: white;
+    --button-text-color: black;
+    --button-hover-bg: white;
+    --input-bg: white;
+    --input-text-color: black;
+    --input-border-color: black;
+    --section-title-color: black;
+    --slider-track-color: black;
+    --slider-thumb-color: black;
+    --message-color: black;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    font-family: monospace;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#controls {
+    width: 256px;
+    height: 100vh;
+    padding: 24px;
+    background-color: var(--control-bg-color);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    align-items: stretch;
+    border-right: 1px solid var(--text-color);
+    box-sizing: border-box;
+}
+
+#controls h3 {
+    color: var(--section-title-color);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+#controls .hint {
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+#canvas-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+#observatory {
+    height: 384px;
+    background-color: var(--control-bg-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--text-color);
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+}
+
+#graphCanvas {
+    flex-grow: 1;
+    background-color: var(--bg-color);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+#graphCanvas svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.node {
+    fill: var(--node-color);
+    stroke: none;
+    cursor: pointer;
+}
+
+.node.selected {
+    stroke: magenta;
+    stroke-width: 4px;
+}
+
+.node.focus-node {
+    fill: lime;
+}
+
+.edge {
+    stroke: var(--edge-color);
+    stroke-width: 1;
+    fill: none;
+}
+
+.edge.focus-edge {
+    stroke-dasharray: 5, 5;
+    fill: lime;
+}
+
+#darkModeToggleContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#darkModeToggleContainer div {
+    display: flex;
+    font-size: 2rem;
+    line-height: 24px;
+    user-select: none;
+    cursor: pointer;
+    text-align: center;
+
+}
+
+#darkModeToggleContainer.is-dark-mode #darkModeIcon,
+#darkModeToggleContainer:not(.is-dark-mode) #lightModeIcon {
+    display: inline-block;
+}
+
+#darkModeToggleContainer.dark-mode #lightModeIcon,
+#darkModeToggleContainer:not(.dark-mode) #darkModeIcon {
+    display: none;
+}
+
+
+button,
+select,
+input[type="text"],
+input[type="range"] {
+    background-color: var(--button-bg);
+    color: var(--button-text-color);
+    border: 1px solid var(--text-color);
+    padding: 8px;
+    border-radius: 1px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s;
+    outline: none;
+    font-family: monospace;
+    font-weight: lighter;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    margin: 4px 0;
+    display: block;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-bg);
+}
+
+.light-mode button:hover {
+    color: var(--button-bg);
+}
+
+button:active {
+    background-color: var(--button-text-color);
+    color: var(--button-bg);
+}
+
+input[type="text"],
+select {
+    padding: 6px 10px;
+    cursor: text;
+    text-align: left;
+}
+
+input[type="text"]::placeholder {
+    text-align: left;
+}
+
+input[type="text"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: calc(100% - 24px);
+    height: 10px;
+    background: transparent;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background: var(--slider-track-color);
+    height: 4px;
+    border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+    background: var(--slider-track-color);
+    height: 4px;
+    border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    background-color: var(--slider-thumb-color);
+    border-radius: 50%;
+    margin-top: -6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    -moz-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    background-color: var(--slider-thumb-color);
+    border-radius: 50%;
+}
+
+
+.step-message {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    fill: var(--message-color);
+    font-size: 1.4em;
+    text-anchor: middle;
+    dominant-baseline: hanging;
+    y: 12px;
+}
+
+.step-message.visible {
+    opacity: 1;
+}
+
+.message-history {
+    fill: var(--message-color);
+    font-size: 1.2rem;
+    text-anchor: middle;
+    dominant-baseline: hanging;
+}
+
+#observatoryRect {
+    fill: var(--control-bg-color);
+    stroke: var(--text-color);
+    stroke-width: 1px;
+}
+
+#scriptControls {
+    margin-bottom: 10px;
+}
+
+#playbackControls {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+#playbackControls button {
+    margin: 0;
+}
+
+#speedControl label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+#speedSlider {
+    appearance: none;
+    height: 4px;
+    border: none;
+}
+
+#templatesSection>div,
+#graphActionsSection>div {
+    margin-bottom: 16px;
+}
+
+#templatesSection h3,
+#graphActionsSection h3,
+#scriptControls h3 {
+    color: var(--section-title-color);
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+#scriptControls h3 {
+    margin-top: 0;
+}

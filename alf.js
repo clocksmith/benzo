@@ -1,4 +1,11 @@
-// alf.js (Algorithmic Logic File)
+/**
+ * @file alf.js
+ * ALF (Algorithmic Logic File) which is used to create a unique graph algorithim
+ * that combines deliberation, dynamic programming, shortest paths, human in the loop,
+ * and more.
+ */
+
+import { exampleLdrProcessor } from './ldr.js';
 
 const WEIGHTS = {
     TIME: 0.4,
@@ -28,30 +35,199 @@ class Graph {
     constructor(renderCallback) {
         this.nodes = {};
         this.memo = {};
-        this.renderCallback = renderCallback;
+        this.stepCounter = 1;
+        this.renderCallback = renderCallback || this.defaultRenderCallback;
     }
 
-    addNode(nodeId, data, type = "task") {
-        this.nodes[nodeId] = { data, edges: {}, type };
-        this.renderCallback({ action: "add_node", nodeId, data, type });
+    defaultRenderCallback = (stepDefinition) => {
+        const ldrsScript = { [this.stepCounter++]: stepDefinition };
+        exampleLdrProcessor(ldrsScript);
     }
 
-    addEdge(fromNodeId, toNodeId, weight = null, type = "sequence") {
+    // --- Functions that use render. --- //
+
+    resetGraph() {
+        this.nodes = {};
+        this.memo = {};
+        this.selectedPath = [];
+        this.focusArea = [];
+        this.stepCounter = 1;
+        this.renderCallback({ "reset": {} });
+    }
+
+    addNode(nodeId, data, kind = "task") {
+        this.nodes[nodeId] = { data, edges: {}, kind };
+        this.renderCallback({ "add_node": { nodeId, data, kind } });
+    }
+
+    addEdge(fromNodeId, toNodeId, weight = null, edgeType = "sequence") {
         if (!this.nodes[fromNodeId] || !this.nodes[toNodeId]) return;
 
         if (weight === null) {
             weight = calculateWeight(this.nodes[toNodeId].data);
         }
-        this.nodes[fromNodeId].edges[toNodeId] = { weight, type };
-        this.renderCallback({ action: "connect_nodes", node1: fromNodeId, node2: toNodeId, weight, edgeType: type });
+        this.nodes[fromNodeId].edges[toNodeId] = { weight, edgeType };
+        this.renderCallback({ "connect_nodes": { node1: fromNodeId, node2: toNodeId, weight, edgeType } });
     }
+
+    removeNode() {
+        const lastNodeId = Object.keys(this.nodes).pop();
+        if (lastNodeId) {
+            delete this.nodes[lastNodeId];
+            this.renderCallback({ "remove_node": { nodeId: lastNodeId } });
+            this.selectedPath = this.selectedPath.filter(id => id !== lastNodeId);
+            this.focusArea = this.focusArea.filter(id => id !== lastNodeId);
+        }
+    }
+
+    selectPath(nodeIds) {
+        this.selectedPath = nodeIds.filter(id => this.nodes[id]);
+        this.renderCallback({ "select_path": { nodeIds: this.selectedPath } });
+    }
+
+    copyMoveToFocus() {
+        if (this.selectedPath.length === 0) return;
+        this.focusArea = [];
+
+        this.selectedPath.forEach(nodeId => {
+            const originalNode = this.getNode(nodeId);
+            const focusNodeId = `focus_${nodeId}`;
+            this.focusArea.push(focusNodeId);
+            const focusNodeData = JSON.parse(JSON.stringify(originalNode.data));
+            this.renderCallback({ "add_node": { nodeId: focusNodeId, data: focusNodeData, kind: originalNode.kind } });
+        });
+
+        this.renderCallback({ "copy_move_to_focus": { nodeIds: this.focusArea } });
+    }
+
+    straightenPath() {
+        if (this.focusArea.length === 0) return;
+        this.renderCallback({ "straighten_path": { nodeIds: this.focusArea } });
+    }
+
+    compressPath() {
+        if (this.focusArea.length < 2) return;
+        const startNodeId = this.focusArea[0];
+        const endNodeId = this.focusArea[this.focusArea.length - 1];
+        this.renderCallback({ "compress_path": { startNodeId, endNodeId, intermediateNodes: this.focusArea.slice(1, -1) } });
+    }
+
+    async addCompressedPathToGraph() {
+        if (this.focusArea.length < 2) return;
+
+        const startNodeId = this.focusArea[0].replace(/^focus_/, '');
+        const endNodeId = this.focusArea[this.focusArea.length - 1].replace(/^focus_/, '');
+        const startNode = this.getNode(startNodeId);
+        const endNode = this.getNode(endNodeId);
+
+        if (!startNode || !endNode) {
+            console.warn("Start/end node not found.");
+            return;
+        }
+
+        const compressedTaskName = `Compressed_${startNode.data.title}_to_${endNode.data.title}`;
+        const compressedTaskData = await this.createTaskDataFromLLMSuggestion(compressedTaskName);
+        if (!compressedTaskData) return;
+
+        const compressedNodeId = this.addTask(compressedTaskData);
+        const originalPath = this.aStar(startNodeId, endNodeId);
+        const compressedWeight = originalPath.cost;
+
+        this.addEdge(startNodeId, compressedNodeId, compressedWeight, "compressed");
+        this.addEdge(compressedNodeId, endNodeId, 0, "compressed");
+
+        this.renderCallback({ "add_compressed_path_to_graph": { startNodeId, endNodeId, compressedNodeId, compressedWeight } });
+    }
+
+    addCircularRings(ringSizes) {
+        this.renderCallback({ "add_circular_rings": { ringSizes } })
+    }
+
+    addTriangularGrid(numRings) {
+        this.renderCallback({ "add_triangular_grid": { numRings } })
+    }
+
+    createSubGraph(parentNodeId, goal) {
+        const parentNode = this.getNode(parentNodeId);
+        if (!parentNode) {
+            console.warn(`Parent node not found: ${parentNodeId}`);
+            return null;
+        }
+
+        const subGraph = new Graph(this.renderCallback)
+        subGraph.addNode("sub_start", { title: `Sub-Graph Start (${goal})` }, "start");
+        subGraph.addNode("sub_end", { title: "Sub-Graph End" }, "end");
+
+        // TODO(clocksmith): Pass / copy all context, continuously, as needed.
+        if (parentNode.data.designContext) {
+            subGraph.designContext = { ...parentNode.data.designContext };
+        }
+
+        subGraph.goal = goal;
+        subGraph.parentNodeId = parentNodeId;
+
+        this.renderCallback({ "create_subgraph": { parentNodeId, subGraphId: subGraph.goal } });
+        return subGraph;
+    }
+
+    mergeSubGraph(subGraph, mergeStrategy = "add_nodes") {
+        if (!subGraph.parentNodeId) {
+            console.warn("Sub-graph has no parent node. Cannot merge.");
+            return;
+        }
+
+        const parentNode = this.getNode(subGraph.parentNodeId);
+        if (!parentNode) {
+            console.warn(`Parent node not found: ${subGraph.parentNodeId}`);
+            return;
+        }
+
+        switch (mergeStrategy) {
+            case "add_nodes":
+                // Add nodes/edges from sub-graph to main graph.
+                for (const nodeId in subGraph.nodes) {
+                    if (nodeId == "sub_start" || nodeId == "sub_end") continue;
+
+                    const newNodeId = `${subGraph.parentNodeId}_${nodeId}`;
+                    this.addNode(newNodeId, subGraph.nodes[nodeId].data, subGraph.nodes[nodeId].kind);
+
+                    // Connect the new node to parent.
+                    if (nodeId != "sub_start") this.addEdge(subGraph.parentNodeId, newNodeId)
+                }
+                for (const fromNodeId in subGraph.nodes) {
+                    for (const toNodeId in subGraph.nodes[fromNodeId].edges) {
+                        // Don't add edges that are from or to the start and end nodes.
+                        if (fromNodeId == "sub_start" || toNodeId == "sub_end" || fromNodeId == "sub_end" || toNodeId == "sub_start") continue;
+                        const newFromNodeId = `${subGraph.parentNodeId}_${fromNodeId}`;
+                        const newToNodeId = `${subGraph.parentNodeId}_${toNodeId}`;
+                        this.addEdge(newFromNodeId, newToNodeId, subGraph.nodes[fromNodeId].edges[toNodeId].weight, subGraph.nodes[fromNodeId].edges[toNodeId].edgeType);
+                    }
+                }
+                break;
+            case "update_parent":
+                // TODO(clocksmith): implemnet this.
+                console.warn("update_parent merge strategy not implemented yet.");
+                break;
+            case "compress":
+                // TODO(clocksmith): implemnet this.
+                console.warn("compress merge strategy not implemented yet.");
+                break;
+
+            default:
+                console.warn(`Unknown merge strategy: ${mergeStrategy}`);
+        }
+
+        this.renderCallback({ "merge_subgraph": { parentNodeId: subGraph.parentNodeId, subGraphId: subGraph.goal, mergeStrategy } });
+    }
+
+    // --- Functions that don't currently use render. --- //
 
     getNode(nodeId) {
         return this.nodes[nodeId];
     }
 
     heuristic(currentNodeId, endNodeId) {
-        //Basic distance estimate
+        // TODO:(clocksmith): Simplify, basic distance estimate.
         const currentNodeNumber = parseInt(currentNodeId.match(/\d+/)[0], 10)
         const endNodeNumber = parseInt(endNodeId.match(/\d+/)[0], 10)
         return Math.abs(endNodeNumber - currentNodeNumber);
@@ -138,15 +314,15 @@ class Graph {
         for (const persona of personas) {
             const personaPrompt = `Persona: ${persona.name}\nRole: ${persona.description}\n\n${prompt}`;
             console.log(`Prompting Persona: ${persona.name}`);
-            const response = await this.callLLM(personaPrompt);  // Simulate LLM call
+            const response = await this.callLLM(personaPrompt);
             personaResponses.push({ persona, response });
         }
         return personaResponses;
     }
 
     synthesizeDeliberation(personaResponses) {
-        console.log("Synthesizing Deliberation:", personaResponses);
-        // Placeholder: return the first response.  Replace with a real synthesis.
+        console.log("Synthesizing deliberation:", personaResponses);
+        // Placeholder: return the first response. Replace with a real synthesis.
         const firstResponse = personaResponses[0]?.response;
         if (!firstResponse || !firstResponse.action) {
             return { action: "proceed" };
@@ -182,7 +358,7 @@ class Graph {
         switch (llmResponse.action) {
             case "proceed":
                 for (let solutionKey in currentNode.data.potential_solutions) {
-                    if (currentNode.type == "task") {
+                    if (currentNode.kind == "task") {
                         let solutionNodeId = `${currentNodeId}_${solutionKey}`
                         this.addNode(solutionNodeId, currentNode.data.potential_solutions[solutionKey], "solution");
                         this.addEdge(currentNodeId, solutionNodeId, null, "solution_selection");
@@ -209,20 +385,20 @@ class Graph {
                 return this.handleSubGraphTrigger(currentNodeId, llmResponse.subgraphGoal);
 
             default:
-                console.warn("Unknown LLM action:", llmResponse.action);
+                console.warn("Unknown LLM command:", llmResponse.action);
                 return null;
         }
     }
 
     shouldTriggerDeliberation(node) {
-        if (node.type === "decision") return true;
+        if (node.kind === "decision") return true;
         if (node.data.complexity >= 6) return true;
         return false;
     }
 
     async createTaskDataFromLLMSuggestion(taskName) {
         const prompt = `Create a JSON object for a new design task named "${taskName}". Include title, description, potential solutions (at least 'manual_human'), and initial estimates (1-7 scale) for time, pain, complexity, and human_in_loop_feedback_initial/refined.`;
-        const llmResponse = await this.callLLM(prompt); // Mocked
+        const llmResponse = await this.callLLM(prompt);
 
         return {
             title: taskName,
@@ -261,7 +437,7 @@ class Graph {
     requestHumanFeedback(nodeId) {
         const node = this.getNode(nodeId);
         console.log(`Requesting human feedback for task: ${node.data.title}`);
-        // Simulated feedback
+        // Simulated feedback.
         const feedbackTypes = [
             { type: 'rating', scale: 'human_in_loop_feedback_refined', value: 4 },
             { type: 'boolean', question: 'Was the task successful?', value: true },
@@ -293,7 +469,7 @@ class Graph {
         if (nextNodeId) {
             const nextNode = this.getNode(nextNodeId);
 
-            if (nextNode && nextNode.type === "solution") {
+            if (nextNode && nextNode.kind === "solution") {
                 console.log(`Executing solution: ${nextNode.data.name}`);
                 await new Promise((resolve) => setTimeout(resolve, nextNode.data.time_estimate * 500)); // Simulate
 
@@ -350,169 +526,14 @@ class Graph {
         this.addEdge(prevTaskId, "end");
     }
 
-    resetGraph() {
-        this.nodes = {};
-        this.memo = {};
-        this.selectedPath = [];
-        this.focusArea = [];
-        this.renderCallback({ action: "reset" });
-    }
-
-    removeNode() {
-        const lastNodeId = Object.keys(this.nodes).pop();
-        if (lastNodeId) {
-            delete this.nodes[lastNodeId];
-            this.renderCallback({ action: "remove_node", nodeId: lastNodeId });
-            this.selectedPath = this.selectedPath.filter(id => id !== lastNodeId);
-            this.focusArea = this.focusArea.filter(id => id !== lastNodeId);
-        }
-    }
-
-    selectPath(nodeIds) {
-        this.selectedPath = nodeIds.filter(id => this.nodes[id]); // Only existing
-        this.renderCallback({ action: "select_path", nodeIds: this.selectedPath });
-    }
-    copyMoveToFocus() {
-        if (this.selectedPath.length === 0) return;
-        this.focusArea = [];
-
-        this.selectedPath.forEach(nodeId => {
-            const originalNode = this.getNode(nodeId);
-            const focusNodeId = `focus_${nodeId}`;
-            this.focusArea.push(focusNodeId);
-            const focusNodeData = JSON.parse(JSON.stringify(originalNode.data));
-            this.renderCallback({ action: "add_node", nodeId: focusNodeId, data: focusNodeData, type: originalNode.type });
-        });
-
-        this.renderCallback({ action: "copy_move_to_focus", nodeIds: this.focusArea });
-    }
-
-    straightenPath() {
-        if (this.focusArea.length === 0) return;
-        this.renderCallback({ action: "straighten_path", nodeIds: this.focusArea });
-    }
-
-    compressPath() {
-        if (this.focusArea.length < 2) return;
-        const startNodeId = this.focusArea[0];
-        const endNodeId = this.focusArea[this.focusArea.length - 1];
-        this.renderCallback({ action: "compress_path", startNodeId, endNodeId, intermediateNodes: this.focusArea.slice(1, -1) });
-    }
-
-    async addCompressedPathToGraph() {
-        if (this.focusArea.length < 2) return;
-
-        const startNodeId = this.focusArea[0].replace(/^focus_/, '');
-        const endNodeId = this.focusArea[this.focusArea.length - 1].replace(/^focus_/, '');
-        const startNode = this.getNode(startNodeId);
-        const endNode = this.getNode(endNodeId);
-
-        if (!startNode || !endNode) {
-            console.warn("Start/end node not found.");
-            return;
-        }
-
-        const compressedTaskName = `Compressed_${startNode.data.title}_to_${endNode.data.title}`;
-        const compressedTaskData = await this.createTaskDataFromLLMSuggestion(compressedTaskName);
-        if (!compressedTaskData) return;
-
-        const compressedNodeId = this.addTask(compressedTaskData);
-        const originalPath = this.aStar(startNodeId, endNodeId);
-        const compressedWeight = originalPath.cost;
-
-        this.addEdge(startNodeId, compressedNodeId, compressedWeight, "compressed");
-        this.addEdge(compressedNodeId, endNodeId, 0, "compressed");
-
-        this.renderCallback({ action: "add_compressed_path_to_graph", startNodeId, endNodeId, compressedNodeId, compressedWeight });
-    }
-
-    addCircularRings(ringSizes) {
-        this.renderCallback({ action: "add_circular_rings", ringSizes })
-    }
-
-    addTriangularGrid(numRings) {
-        this.renderCallback({ action: "add_triangular_grid", numRings })
-    }
-    createSubGraph(parentNodeId, goal) {
-        const parentNode = this.getNode(parentNodeId);
-        if (!parentNode) {
-            console.warn(`Parent node not found: ${parentNodeId}`);
-            return null;
-        }
-
-        const subGraph = new Graph(this.renderCallback); // New Graph instance
-        subGraph.addNode("sub_start", { title: `Sub-Graph Start (${goal})` }, "start");
-        subGraph.addNode("sub_end", { title: "Sub-Graph End" }, "end");
-
-        // Copy relevant data (e.g., design context, style guide)
-        if (parentNode.data.designContext) {
-            subGraph.designContext = { ...parentNode.data.designContext }; // Deep copy
-        }
-        // Add more data copying as needed from parent and potentially other related nodes
-
-        subGraph.goal = goal; // Set the sub-graph's goal
-        subGraph.parentNodeId = parentNodeId; // Store parent for merging.
-
-        this.renderCallback({ action: "create_subgraph", parentNodeId, subGraphId: subGraph.goal }); // Render
-        return subGraph;
-    }
-
-    mergeSubGraph(subGraph, mergeStrategy = "add_nodes") {
-        if (!subGraph.parentNodeId) {
-            console.warn("Sub-graph has no parent node. Cannot merge.");
-            return;
-        }
-
-        const parentNode = this.getNode(subGraph.parentNodeId);
-        if (!parentNode) {
-            console.warn(`Parent node not found: ${subGraph.parentNodeId}`);
-            return;
-        }
-
-        switch (mergeStrategy) {
-            case "add_nodes":
-                // Add nodes/edges from sub-graph to main graph.
-                for (const nodeId in subGraph.nodes) {
-                    if (nodeId == "sub_start" || nodeId == "sub_end") continue; //Skip special nodes
-
-                    const newNodeId = `${subGraph.parentNodeId}_${nodeId}`; // Prefix to avoid collisions
-                    this.addNode(newNodeId, subGraph.nodes[nodeId].data, subGraph.nodes[nodeId].type);
-
-                    //Connect the new node to parent
-                    if (nodeId != "sub_start") this.addEdge(subGraph.parentNodeId, newNodeId)
-                }
-                for (const fromNodeId in subGraph.nodes) {
-                    for (const toNodeId in subGraph.nodes[fromNodeId].edges) {
-                        //dont add edges that are from or to the start and end nodes.
-                        if (fromNodeId == "sub_start" || toNodeId == "sub_end" || fromNodeId == "sub_end" || toNodeId == "sub_start") continue;
-                        const newFromNodeId = `${subGraph.parentNodeId}_${fromNodeId}`;
-                        const newToNodeId = `${subGraph.parentNodeId}_${toNodeId}`;
-                        this.addEdge(newFromNodeId, newToNodeId, subGraph.nodes[fromNodeId].edges[toNodeId].weight, subGraph.nodes[fromNodeId].edges[toNodeId].type);
-                    }
-                }
-                break;
-            case "update_parent":
-                // TODO
-                console.warn("update_parent merge strategy not implemented yet.");
-                break;
-            case "compress":
-                // TODO
-                console.warn("compress merge strategy not implemented yet.");
-                break;
-
-            default:
-                console.warn(`Unknown merge strategy: ${mergeStrategy}`);
-        }
-
-        this.renderCallback({ action: "merge_subgraph", parentNodeId: subGraph.parentNodeId, subGraphId: subGraph.goal, mergeStrategy });
-    }
     async handleSubGraphTrigger(currentNodeId, subgraphGoal) {
         const subGraph = this.createSubGraph(currentNodeId, subgraphGoal);
 
         if (subGraph) {
             console.log(`Subgraph created with goal: ${subgraphGoal}`)
+
             //Option 1: Just create it. Let the main execution loop get back to it.
-            return null; // Let selectAction handle the next step
+            return null;
 
             // Option 2: Run the subgraph immediately and merge when it's done.
             // let currentSub = "sub_start";
@@ -529,4 +550,4 @@ class Graph {
     }
 }
 
-export { Graph, calculateWeight }; // Export for use in render.js
+export { Graph, calculateWeight };

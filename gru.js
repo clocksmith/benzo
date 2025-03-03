@@ -1,10 +1,16 @@
-// render.js (Rendering and UI Logic)
 
-import { Graph, calculateWeight } from './alf.js';
-import * as S from './scripts.js'; // Assuming scripts.js is accessible
+/**
+ * @file gru.js
+ * GRU ((Graph Render Ui)) which can be used to step through, play, or record
+ * LDR scripts. Can also just be a playground.
+ */
+
+import * as L from './ldr.js';
+import * as A from './alf.js';
 
 // --- DOM Element References ---
 const graphCanvas = document.getElementById('graphCanvas');
+// TODO(clocksmith): This should not be unused.
 const controls = document.getElementById('controls');
 const darkModeToggleContainer = document.getElementById('darkModeToggleContainer');
 const resetButton = document.getElementById('resetButton');
@@ -36,96 +42,56 @@ let isPlaying = false;
 let playSpeed = 500;
 let playInterval;
 let messageHistoryArray = [];
-let selectedNodeIdForConnection = null; //for connecting nodes, remember first
+let selectedNodeIdForConnection = null;
+let nextNodeId = 0;
 
-// --- Graph Instance ---
-const graph = new Graph(renderCommand); // Create graph, pass render callback
+const graph = new A.Graph(renderStep);
 
 // --- Rendering Functions ---
 
-function renderCommand(command) {
-    console.log("RENDER:", command); // Keep this for debugging
-
-    switch (command.action) {
-        case "add_node":
-            renderAddNode(command.nodeId, command.data, command.type);
-            break;
-        case "connect_nodes":
-            renderConnectNodes(command.node1, command.node2, command.weight, command.edgeType);
-            break;
-        case "reset":
-            resetDisplay();
-            break;
-        case "remove_node":
-            renderRemoveNode(command.nodeId);
-            break;
-        case "select_path":
-            renderSelectPath(command.nodeIds);
-            break;
-        case "copy_move_to_focus":
-            renderCopyMoveToFocus(command.nodeIds);
-            break;
-        case "straighten_path":
-            renderStraightenPath(command.nodeIds);
-            break;
-        case "compress_path":
-            renderCompressPath(command.startNodeId, command.endNodeId, command.intermediateNodes);
-            break;
-        case "add_compressed_path_to_graph":
-            renderAddCompressedPath(command.startNodeId, command.endNodeId, command.compressedNodeId, command.compressedWeight);
-            break;
-        case "add_circular_rings":
-            renderAddCircularRings(command.ringSizes);
-            break;
-        case "add_triangular_grid":
-            renderAddTriangularGrid(command.numRings)
-            break;
-        case "create_subgraph":
-            console.log("create subgraph")
-            //renderCreateSubGraph(command.parentNodeId, command.subGraphId); //TODO: For advanced vis
-            break;
-        case "merge_subgraph":
-            console.log("merge sub graph")
-            //renderMergeSubGraph(command.parentNodeId, command.subGraphId, command.mergeStrategy); //TODO: For advanced vis
-            break;
-        default:
-            console.warn("Unknown render action:", command.action);
-    }
+function renderStep(stepDefinition) {
+    const stepNumber = currentStepIndex + 1;
+    const ldrsScript = { [stepNumber]: stepDefinition };
+    // L.exampleLdrProcessor(ldrsScript);
+    // TODO: Create a mapping ofr commands to functions for a GRU processor and user here.
 }
 
-function renderAddNode(nodeId, data, type) {
-    // Create a new SVG circle element for the node.
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('class', `node ${type}-node`); // Use type for class
-    circle.setAttribute('data-node-id', nodeId);
-    circle.setAttribute('r', 10); // Default radius
 
-    // Set initial position (can be improved)
+function renderAddNode(params) {
+    const { nodeId, data, kind } = params;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('class', `node ${kind}-node`);
+    circle.setAttribute('data-node-id', nodeId);
+    circle.setAttribute('r', 6);
     circle.setAttribute('cx', graphCanvas.clientWidth / 2);
     circle.setAttribute('cy', graphCanvas.clientHeight / 2);
 
     circle.addEventListener('click', () => onNodeClick(nodeId));
     mainSvg.appendChild(circle);
+    updateEdgePositions();
 }
 
 
-function renderConnectNodes(node1Id, node2Id, weight, edgeType) {
+function renderConnectNodes(params) {
+    const { node1, node2, weight, edgeType } = params;
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('class', `edge ${edgeType}-edge`);
-    line.setAttribute('data-from', node1Id); // Use data- attributes for IDs
-    line.setAttribute('data-to', node2Id);
-    // Weight can be used for styling/display if needed later.
+    // Use data- attributes for IDs
+    line.setAttribute('data-from', node1);
+    line.setAttribute('data-to', node2);
+    // TODO(clocksmith): Weight can be used for styling/display if needed later.
     mainSvg.appendChild(line);
-    updateEdgePositions(); // Call this to position based on current nodes
+    updateEdgePositions();
 }
 
-function resetDisplay() {
-    mainSvg.innerHTML = ''; // Clear SVG
+function resetDisplay(params) {
+    mainSvg.innerHTML = '';
     observatorySvg.innerHTML = '';
-    setupObservatory(); // Re-add message elements
+    setupObservatory();
 }
 
-function renderRemoveNode(nodeId) {
+function renderRemoveNode(params) {
+    const { nodeId } = params;
     const nodeElement = mainSvg.querySelector(`[data-node-id="${nodeId}"]`);
     if (nodeElement) {
         mainSvg.removeChild(nodeElement);
@@ -136,7 +102,8 @@ function renderRemoveNode(nodeId) {
     edges.forEach(edge => mainSvg.removeChild(edge));
 }
 
-function renderSelectPath(nodeIds) {
+function renderSelectPath(params) {
+    const { nodeIds } = params;
     // First, clear any existing selection by removing the "selected" class
     mainSvg.querySelectorAll('.node.selected').forEach(node => {
         node.classList.remove('selected');
@@ -151,9 +118,10 @@ function renderSelectPath(nodeIds) {
     });
 }
 
-function renderCopyMoveToFocus(nodeIds) {
-    const graphCanvasRect = graphCanvas.getBoundingClientRect();
+function renderCopyMoveToFocus(params) {
+    const { nodeIds } = params;
     const observatoryRect = observatory.getBoundingClientRect();
+    const observatorySvgRect = observatorySvg.getBoundingClientRect();
 
     nodeIds.forEach((nodeId, index) => {
         const originalNode = mainSvg.querySelector(`.node[data-node-id="${nodeId}"]`);
@@ -161,17 +129,17 @@ function renderCopyMoveToFocus(nodeIds) {
             console.warn(`Node not found for rendering: ${nodeId}`);
             return;
         }
-        // Clone the node for the observatory
+        // Clone the node for the observatory.
         const clonedNode = originalNode.cloneNode(true);
-        clonedNode.classList.add('focus-node'); // Mark as in focus area
-        clonedNode.removeAttribute('data-node-id');  // Remove original ID
-        clonedNode.setAttribute('data-focus-node-id', nodeId); // Use original ID.
+        clonedNode.classList.add('focus-node');
+        clonedNode.removeAttribute('data-node-id');
+        clonedNode.setAttribute('data-focus-node-id', nodeId);
 
-        // Calculate target position within the observatory
+        // Calculate target position within the observatory.
         const targetX = 20 + (observatoryRect.width - 40) * (index / (nodeIds.length - 1 || 1));
         const targetY = observatoryRect.height / 2;
 
-        //Set position of cloned node, no animation needed.
+        // TODO(clocksmith): Animate this?
         clonedNode.setAttribute('cx', targetX);
         clonedNode.setAttribute('cy', targetY);
 
@@ -193,10 +161,12 @@ function renderCopyMoveToFocus(nodeIds) {
             }
         })
     })
+    updateFocusEdgePositions();
 }
 
 
-function renderStraightenPath(nodeIds) {
+function renderStraightenPath(params) {
+    const { nodeIds } = params;
     const observatoryRect = observatory.getBoundingClientRect();
     const startX = 20;
     const endX = observatoryRect.width - 20;
@@ -214,7 +184,8 @@ function renderStraightenPath(nodeIds) {
     updateFocusEdgePositions();
 }
 
-function renderCompressPath(startNodeId, endNodeId, intermediateNodes) {
+function renderCompressPath(params) {
+    const { startNodeId, endNodeId, intermediateNodes } = params;
     // Remove intermediate nodes
     intermediateNodes.forEach(nodeId => {
         const nodeElement = observatorySvg.querySelector(`[data-focus-node-id="${nodeId}"]`);
@@ -228,7 +199,8 @@ function renderCompressPath(startNodeId, endNodeId, intermediateNodes) {
 }
 
 
-function renderAddCompressedPath(startNodeId, endNodeId, compressedNodeId, compressedWeight) {
+function renderAddCompressedPath(params) {
+    const { startNodeId, endNodeId, compressedNodeId, compressedWeight } = params;
     // This function adds the compressed path (a single edge) back to the main graph.
     // We get the positions from the *original* nodes in the main graph.
 
@@ -260,9 +232,11 @@ function renderAddCompressedPath(startNodeId, endNodeId, compressedNodeId, compr
     line.setAttribute('data-from', startNodeId); // Still use original IDs
     line.setAttribute('data-to', endNodeId);   // Still use original IDs
     mainSvg.appendChild(line);
+    updateEdgePositions();
 }
 
-function renderAddCircularRings(ringSizes) {
+function renderAddCircularRings(params) {
+    const { ringSizes } = params;
     const centerX = graphCanvas.clientWidth / 2;
     const centerY = graphCanvas.clientHeight / 2;
     let currentRadius = 40;
@@ -289,10 +263,12 @@ function renderAddCircularRings(ringSizes) {
         }
         previousRingNodes = numNodes;
     });
+    updateEdgePositions();
 }
 
 
-function renderAddTriangularGrid(numRings) {
+function renderAddTriangularGrid(params) {
+    const { numRings } = params;
     const centerX = graphCanvas.clientWidth / 2;
     const centerY = graphCanvas.clientHeight / 2;
     const nodeSpacing = Math.min(centerX, centerY) * 0.2;
@@ -306,7 +282,16 @@ function renderAddTriangularGrid(numRings) {
             graph.addNode(`node-${nextNodeId++}`, { x: x, y: y }, 'trigrid');
         }
     }
+    updateEdgePositions();
 }
+
+function renderMessageOnly(params) {
+    const { message } = params;
+    messageHistoryArray.push(message);
+    if (messageHistoryArray.length > 3) messageHistoryArray.shift();
+    updateMessageDisplay();
+}
+
 
 // --- Helper functions to update positions ---
 
@@ -395,6 +380,7 @@ function setupObservatory() {
 
     observatorySvg.appendChild(observatoryFragment);
 
+    // TODO(clocksmith): Name mismatch?
     currentStepMessage = document.getElementById('currentStepMessage');
     messageHistory = document.getElementById('messageHistory');
 }
@@ -407,7 +393,7 @@ function updateMessageDisplay() {
             if (currentStepMessage) {
                 currentStepMessage.classList.remove('visible');
             }
-        }, stepDelay * 3);
+        }, playSpeed * 3);
     }
 
     if (messageHistory) {
@@ -428,14 +414,16 @@ function updateStepDisplay() {
 }
 
 function loadScript(scriptName) {
-    currentScript = S.scripts[scriptName];
+    currentScript = L.scripts[scriptName];
     if (currentScript) {
-        scriptSteps = Object.entries(currentScript).sort((a, b) => parseInt(a[0].substring(4)) - parseInt(b[0].substring(4)));
+        scriptSteps = Object.entries(currentScript).sort((a, b) => parseInt(a[0].substring(1)) - parseInt(b[0].substring(1)));
         currentStepIndex = -1;
-        graph.resetGraph(); // Reset graph
+        graph.resetGraph();
         stopPlaying();
-        stepForward(); // Show first step immediately
+        stepForward();
         updateStepDisplay();
+        messageHistoryArray = [];
+        updateMessageDisplay();
     } else {
         scriptSteps = [];
         currentStepIndex = -1;
@@ -447,57 +435,48 @@ function executeStep(step) {
     if (!step) return;
     console.log("executing step...", step);
 
-    if (step.message) {
-        messageHistoryArray.push(step.message);
-        if (messageHistoryArray.length > 3) messageHistoryArray.shift();
-        updateMessageDisplay();
+    const commandName = Object.keys(step)[0];
+    const params = step[commandName];
+
+    if (params && params.message) {
+        renderMessageOnly({ message: params.message })
     }
 
     // Call graph methods, not direct rendering
-    if (step.reset !== undefined && step.reset === null) {
+    if (commandName === "reset") {
         graph.resetGraph();
+    } else if (commandName === "add_circular_rings") {
+        graph.addCircularRings(params.ringSizes);
+    } else if (commandName === "add_triangular_grid") {
+        graph.addTriangularGrid(params.numRings);
+    } else if (commandName === "add_node") {
+        graph.addNode(params.nodeId, params.data, params.kind);
+    } else if (commandName === "remove_node") {
+        graph.removeNode(params.nodeId);
+    } else if (commandName === "connect_nodes") {
+        graph.addEdge(params.node1, params.node2, params.weight, params.edgeType);
+    } else if (commandName === "select_path") {
+        graph.selectPath(params.nodeIds);
+    } else if (commandName === "copy_move_to_focus") {
+        graph.copyMoveToFocus(params.nodeIds);
+    } else if (commandName === "straighten_path") {
+        graph.straightenPath(params.nodeIds);
+    } else if (commandName === "compress_path") {
+        graph.compressPath(params);
+    } else if (commandName === "add_compressed_path_to_graph") {
+        graph.addCompressedPathToGraph(params);
+    } else if (commandName === "message_only") {
+        renderMessageOnly(params);
     }
-    if (step.add_circular_rings) {
-        graph.addCircularRings(step.add_circular_rings)
-    }
-    if (step.add_triangular_grid) {
-        graph.addTriangularGrid(step.add_triangular_grid);
-    }
-    if (step.add_node) {
-        // Pass the node config to addNode
-        graph.addNode(step.add_node.id, step.add_node);
-    }
-    if (step.remove_node !== undefined && step.remove_node === null) {
-        graph.removeNode();
-    }
-    if (step.connect_nodes) {
-        graph.addEdge(step.connect_nodes.node1, step.connect_nodes.node2);
-    }
-
-    if (step.select_path) {
-        graph.selectPath(step.select_path);
-    }
-    if (step.copy_move_to_focus !== undefined && step.copy_move_to_focus === null) {
-        graph.copyMoveToFocus();
-    }
-    if (step.straighten_path !== undefined && step.straighten_path === null) {
-        graph.straightenPath();
-    }
-    if (step.compress_path !== undefined && step.compress_path === null) {
-        graph.compressPath();
-    }
-    if (step.add_compressed_path_to_graph !== undefined && step.add_compressed_path_to_graph === null) {
-        graph.addCompressedPathToGraph();
-    }
-
 }
 
+
 function stepForward() {
-    stopPlaying(); // Stop any current playback
+    stopPlaying();
     if (currentStepIndex < scriptSteps.length - 1) {
         currentStepIndex++;
-        executeStep(scriptSteps[currentStepIndex][1]); // Execute the step
-        updateStepDisplay(); // Update display
+        executeStep(scriptSteps[currentStepIndex][1]);
+        updateStepDisplay();
     } else {
         stopPlaying();
         isPlaying = false;
@@ -511,9 +490,9 @@ function stepBackward() {
         currentStepIndex--;
         executeStep(scriptSteps[currentStepIndex][1]);
         updateStepDisplay();
-    } else if (currentStepIndex === 0) { //Special case for first step
+    } else if (currentStepIndex === 0) {
         currentStepIndex--;
-        resetDisplay(); // Clear and redraw the observatory
+        resetDisplay({});
         updateStepDisplay();
     }
 }
@@ -530,7 +509,7 @@ function playScript() {
         }
         playInterval = setInterval(() => {
             stepForward();
-            if (currentStepIndex >= scriptSteps.length - 1) stopPlaying(); // Stop at the end
+            if (currentStepIndex >= scriptSteps.length - 1) stopPlaying();
         }, playSpeed);
     }
 }
@@ -561,9 +540,10 @@ function setupEventListeners() {
     darkModeToggleContainer.addEventListener('click', toggleDarkMode);
     resetButton.addEventListener('click', () => { graph.resetGraph(); });
     addNodeButton.addEventListener('click', () => { graph.addNode(`node-${nextNodeId++}`, { x: 100, y: 100 }); }); // Basic add
-    removeNodeButton.addEventListener('click', () => { graph.removeNode(); }); //Needs node id
+    // TODO(clocksmith): Needs nodeId.
+    removeNodeButton.addEventListener('click', () => { graph.removeNode(); });
     connectNodesButton.addEventListener('click', () => {
-        isConnectingNodes = !isConnectingNodes; // Toggle state
+        isConnectingNodes = !isConnectingNodes;
         connectNodesButton.textContent = isConnectingNodes ? 'Connecting...' : 'Connect Nodes';
         if (!isConnectingNodes) {
             selectedNodeIdForConnection = null;
@@ -592,37 +572,10 @@ function setupEventListeners() {
     playPauseButton.addEventListener('click', () => { togglePlayPause(); });
     speedSlider.addEventListener('input', (event) => {
         playSpeed = parseInt(event.target.value, 10);
-        stepDelay = playSpeed; // Update message delay too
-        if (isPlaying) { stopPlaying(); playScript(); } // Restart if playing
+        if (isPlaying) { stopPlaying(); playScript(); }
         speedLabel.textContent = `Step Speed (${playSpeed}ms)`;
     });
-
-    // --- Observatory Resizing (Advanced - Optional) ---
-    // This is complex to implement correctly, and you'd likely want to use a library like
-    // interact.js for robust drag-resizing. This is a *very* basic placeholder.
-    // const resizeHandle = document.createElement('div');
-    // resizeHandle.id = 'resizeHandle';
-    // observatory.appendChild(resizeHandle);
-
-    // let isResizing = false;
-    // resizeHandle.addEventListener('mousedown', (e) => {
-    //     isResizing = true;
-    //     e.preventDefault(); // Prevent text selection
-    // });
-    // document.addEventListener('mousemove', (e) => { // Use document, not observatory
-    //   if (!isResizing) return;
-    //   const newHeight = e.clientY - observatory.offsetTop;
-    //   observatory.style.height = `${newHeight}px`;
-    //   renderGraph();
-    // });
-
-    // document.addEventListener('mouseup', () => {
-    //     isResizing = false;
-    // });
-    // --- End Optional Resizing ---
 }
-
-// --- Initialization ---
 
 function populateScriptSelector() {
     scriptSelector.innerHTML = '';
@@ -631,8 +584,8 @@ function populateScriptSelector() {
     defaultOption.textContent = 'Select Script';
     scriptSelector.appendChild(defaultOption);
 
-    for (const scriptName in S.scripts) {
-        if (S.scripts.hasOwnProperty(scriptName)) {
+    for (const scriptName in []) {
+        if (L.scripts.hasOwnProperty(scriptName)) {
             const option = document.createElement('option');
             option.value = scriptName;
             option.textContent = scriptName;
@@ -645,14 +598,12 @@ function populateScriptSelector() {
 function main() {
     setupObservatory();
     setupEventListeners();
-    populateScriptSelector(); // Populate scripts from imported scripts.js
+    populateScriptSelector();
     updateStepDisplay();
-    //For testing, auto choose demo_design_tasks_script_0
-    // scriptSelector.value = "ring_demo";
-    // loadScript(scriptSelector.value);
 
-    renderGraph(); // Initial render
+    // For testing, auto-load a script if needed:
+    scriptSelector.value = "designCujLdr";
+    loadScript(scriptSelector.value);
 }
-
 
 main();

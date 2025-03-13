@@ -37,6 +37,8 @@ class Graph {
         this.memo = {};
         this.stepCounter = 1;
         this.renderCallback = renderCallback || this.defaultRenderCallback;
+        this.selectedPath = []; // Initialize selectedPath in Graph class
+        this.focusArea = []; // Initialize focusArea in Graph class
     }
 
     defaultRenderCallback = (stepDefinition) => {
@@ -82,7 +84,7 @@ class Graph {
 
     selectPath(nodeIds) {
         this.selectedPath = nodeIds.filter(id => this.nodes[id]);
-        this.renderCallback({ "select_path": { nodeIds: this.selectedPath } });
+        // this.renderCallback({ "select_path": { nodeIds: this.selectedPath } }); // <-- REMOVED: Prevent recursive render call
     }
 
     copyMoveToFocus() {
@@ -335,7 +337,7 @@ class Graph {
         const currentNode = this.getNode(currentNodeId);
         if (!currentNode) { console.error(`Node not found: ${currentNodeId}`); return null; }
 
-        const shouldDeliberate = this.shouldTriggerDeliberation(currentNode);
+        const shouldDeliberate = this.shouldTriggerDeliberation(node);
 
         let prompt = `Current task: ${currentNode.data.title}\nDescription: ${currentNode.data.description}\n`;
         const availableSolutions = Object.entries(currentNode.data.potential_solutions)

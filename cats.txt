@@ -1,0 +1,2349 @@
+--------------------------------------------------------------------------------
+# File: ldr.js
+/**
+ * @file ldr.js
+ * Defines the LDR(S) (Lucid Diagram RenderScript) language and its commands.
+ */
+
+// Lexiographic order.
+export const commandNames = [
+    'add_circular_rings',
+    'add_compressed_path_to_graph',
+    'add_node',
+    'add_triangular_grid',
+    'compress_path',
+    'connect_nodes',
+    'copy_move_to_focus',
+    'create_subgraph',
+    'merge_subgraph',
+    'message_only',
+    'remove_node',
+    'reset',
+    'select_path',
+    'straighten_path',
+];
+const commands = new Set(commandNames);
+
+
+/**
+ * Example processor an LDR script defined as a JSON object.
+ *
+ * @param {object} ldrsScript - JSON object representing the LDRS script.
+ *                               Keys are step numbers, values are step definitions.
+ *                               Each step definition is an object where:
+ *                                 - key string - The command to execute (see list of commands below).
+ *                                 - value: params object - Parameters for the command (command-specific, see below).
+ *                                   - message: string - Description of the step (optional, included in params).
+ *
+ * **LDRS Commands:**
+ *
+ * {@link LDR.add_circular_rings} - Adds circular rings of nodes to the diagram.
+ * {@link LDR.add_compressed_path_to_graph} - Adds a compressed path to the graph.
+ * {@link LDR.add_node} - Adds a node to the diagram.
+ * {@link LDR.add_triangular_grid} - Adds a triangular grid of nodes to the diagram.
+ * {@link LDR.compress_path} - Compresses a path in the diagram.
+ * {@link LDR.connect_nodes} - Connects two nodes in the diagram.
+ * {@link LDR.copy_move_to_focus} - Copies and moves nodes to focus.
+ * {@link LDR.create_subgraph} - Creates a subgraph.
+ * {@link LDR.merge_subgraph} - Merges a subgraph.
+ * {@link LDR.message_only} - Displays a message without performing any diagram operation.
+ * {@link LDR.remove_node} - Removes a node from the diagram.
+ * {@link LDR.reset} - Resets the diagram display.
+ * {@link LDR.select_path} - Selects a path in the diagram.
+ * {@link LDR.straighten_path} - Straightens a path in the diagram.
+ */
+function exampleLdrProcessor(ldrsScript) {
+    if (!ldrsScript) {
+        console.error("LDR Script is empty or null.");
+        return;
+    }
+
+    const commandRenderMap = new Map([
+        ['add_circular_rings', renderAddCircularRings],
+        ['add_compressed_path_to_graph', renderAddCompressedPath],
+        ['add_node', renderAddNode],
+        ['add_triangular_grid', renderAddTriangularGrid],
+        ['compress_path', renderCompressPath],
+        ['connect_nodes', renderConnectNodes],
+        ['copy_move_to_focus', renderCopyMoveToFocus],
+        ['create_subgraph', renderCreateSubGraph],
+        ['merge_subgraph', renderMergeSubGraph],
+        ['message_only', renderMessageOnly],
+        ['remove_node', renderRemoveNode],
+        ['reset', resetDisplay],
+        ['select_path', renderSelectPath],
+        ['straighten_path', renderStraightenPath],
+    ]);
+
+
+    for (const stepNumber in ldrsScript) {
+        if (ldrsScript.hasOwnProperty(stepNumber)) {
+            const stepDefinition = ldrsScript[stepNumber];
+            if (!stepDefinition) {
+                console.warn(`Step ${stepNumber} is invalid.`);
+                continue;
+            }
+
+            const commandName = Object.keys(stepDefinition)[0];
+            const params = stepDefinition[commandName];
+
+            if (!commandName) {
+                console.warn(`Step ${stepNumber} is missing command.`);
+                continue;
+            }
+
+            const renderFunction = commandRenderMap.get(commandName);
+            if (renderFunction) {
+                console.log(`Executing Step ${stepNumber}: ${commandName} - ${params.message || ''}`);
+                renderFunction(params);
+            } else {
+                console.warn("Unknown render action:", commandName);
+            }
+        }
+    }
+}
+
+/**
+ * **LDRS Command:** Adds circular rings of nodes to the diagram.
+ * @function LDR.add_circular_rings
+ * @param {number[]} params.ringSizes - Array of sizes for each circular ring.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "command": "add_circular_rings",
+ *   "params": {
+ *     "ringSizes": [5, 10, 15],
+ *     "message": "Adding circular rings of nodes"
+ *   }
+ * }
+ */
+function renderAddCircularRings(params) {
+    const { ringSizes } = params;
+    console.log("renderAddCircularRings", ringSizes);
+    // Implement your diagram rendering logic here to add circular rings.
+}
+
+/**
+ * **LDRS Command:** Adds a compressed path to the graph.
+ * @function LDR.add_compressed_path_to_graph
+ * @param {string} params.startNodeId - ID of the start node of the compressed path.
+ * @param {string} params.endNodeId - ID of the end node of the compressed path.
+ * @param {string} params.compressedNodeId - ID of the compressed node representing the path.
+ * @param {number} params.compressedWeight - Weight of the compressed path.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "command": "add_compressed_path_to_graph",
+ *   "params": {
+ *     "startNodeId": "M",
+ *     "endNodeId": "O",
+ *     "compressedNodeId": "M-O",
+ *     "compressedWeight": 5,
+ *     "message": "Adding compressed path M-O"
+ *   }
+ * }
+ */
+function renderAddCompressedPath(params) {
+    const { startNodeId, endNodeId, compressedNodeId, compressedWeight } = params;
+    console.log("renderAddCompressedPath", startNodeId, endNodeId, compressedNodeId, compressedWeight);
+    // Implement your diagram rendering logic here to add a compressed path.
+}
+
+
+/**
+ * **LDRS Command:** Adds a node to the diagram.
+ * @function LDR.add_node
+ * @param {string} params.nodeId - The ID of the node to add.
+ * @param {object} params.data - Data associated with the node.
+ * @param {string} params.kind - Kind of the node.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "add_node": {
+ *     "nodeId": "myNode",
+ *     "data": { "label": "My Node" },
+ *     "kind": "circle",
+ *     "message": "Adding a new node"
+ *   }
+ * }
+ */
+function renderAddNode(params) {
+    const { nodeId, data, kind } = params;
+    console.log("renderAddNode", nodeId, data, kind);
+    // Implement your diagram rendering logic here to add a node.
+}
+
+/**
+ * **LDRS Command:** Adds a triangular grid of nodes to the diagram.
+ * @function LDR.add_triangular_grid
+ * @param {number} params.numRings - Number of rings in the triangular grid.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "command": "add_triangular_grid",
+ *   "params": {
+ *     "numRings": 4,
+ *     "message": "Adding a triangular grid"
+ *   }
+ * }
+ */
+function renderAddTriangularGrid(params) {
+    const { numRings } = params;
+    console.log("renderAddTriangularGrid", numRings);
+    // Implement your diagram rendering logic here to add a triangular grid.
+}
+
+/**
+ * **LDRS Command:** Compresses a path in the diagram.
+ * @function LDR.compress_path
+ * @param {string} params.startNodeId - ID of the starting node of the path.
+ * @param {string} params.endNodeId - ID of the ending node of the path.
+ * @param {string[]} params.intermediateNodes - Array of IDs of intermediate nodes in the path.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "command": "compress_path",
+ *   "params": {
+ *     "startNodeId": "J",
+ *     "endNodeId": "L",
+ *     "intermediateNodes": ["K"],
+ *     "message": "Compressing path J-K-L"
+ *   }
+ * }
+ */
+function renderCompressPath(params) {
+    const { startNodeId, endNodeId, intermediateNodes } = params;
+    console.log("renderCompressPath", startNodeId, endNodeId, intermediateNodes);
+    // Implement your diagram rendering logic here to compress a path.
+}
+
+/**
+ * **LDRS Command:** Connects two nodes in the diagram.
+ * @function LDR.connect_nodes
+ * @param {string} params.node1 - ID of the first node.
+ * @param {string} params.node2 - ID of the second node.
+ * @param {number} [params.weight] - Weight of the connection (optional).
+ * @param {string} [params.edgeType] - Kind of the edge (optional).
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "connect_nodes": {
+ *     "node1": "A",
+ *     "node2": "B",
+ *     "weight": 2,
+ *     "edgeType": "dashed",
+ *     "message": "Connecting nodes A and B"
+ *   }
+ * }
+ */
+function renderConnectNodes(params) {
+    const { node1, node2, weight, edgeType } = params;
+    console.log("renderConnectNodes", node1, node2, weight, edgeType);
+    // Implement your diagram rendering logic here to connect nodes.
+}
+
+/**
+ * **LDRS Command:** Copies and moves nodes to focus in the diagram.
+ * @function LDR.copy_move_to_focus
+ * @param {string[]} params.nodeIds - Array of node IDs to copy and move.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "copy_move_to_focus": {
+ *     "nodeIds": ["E", "F"],
+ *     "message": "Focusing on nodes E and F"
+ *   }
+ * }
+ */
+function renderCopyMoveToFocus(params) {
+    const { nodeIds } = params;
+    console.log("renderCopyMoveToFocus", nodeIds);
+    // Implement your diagram rendering logic here to copy and move nodes to focus.
+}
+
+/**
+ * **LDRS Command:** Creates a subgraph.
+ * @function LDR.create_subgraph
+ * @param {string} params.parentNodeId - ID of the parent node for the subgraph.
+ * @param {string} params.subGraphId - ID for the new subgraph.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "create_subgraph": {
+ *     "parentNodeId": "P",
+ *     "subGraphId": "subgraph1",
+ *     "message": "Creating subgraph under node P"
+ *   }
+ * }
+ */
+function renderCreateSubGraph(params) {
+    const { parentNodeId, subGraphId } = params;
+    console.log("renderCreateSubGraph", parentNodeId, subGraphId);
+    // Implement your diagram rendering logic here to create a subgraph.
+}
+
+/**
+ * **LDRS Command:** Merges a subgraph.
+ * @function LDR.merge_subgraph
+ * @param {string} params.parentNodeId - ID of the parent node where subgraph is located.
+ * @param {string} params.subGraphId - ID of the subgraph to merge.
+ * @param {string} [params.mergeStrategy] - Strategy for merging (optional).
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "merge_subgraph": {
+ *     "parentNodeId": "Q",
+ *     "subGraphId": "subgraph1",
+ *     "mergeStrategy": "replace",
+ *     "message": "Merging subgraph into node Q"
+ *   }
+ * }
+ */
+function renderMergeSubGraph(params) { //TODO: For advanced vis
+    const { parentNodeId, subGraphId, mergeStrategy } = params;
+    console.log("renderMergeSubGraph", parentNodeId, subGraphId, mergeStrategy);
+    // Implement your diagram rendering logic here to merge a subgraph.
+}
+
+/**
+ * **LDRS Command:** Displays a message only.
+ * @function LDR.message_only
+ * @param {string} params.message - The message to display.
+ * @example
+ * {
+ *   "message_only": {
+ *     "message": "Just displaying a message"
+ *   }
+ * }
+ */
+function renderMessageOnly(params) {
+    const { message } = params;
+    console.log("Message Step:", message);
+    // Implement any logic for displaying a message, or just log it.
+}
+
+
+/**
+ * **LDRS Command:** Removes a node from the diagram.
+ * @function LDR.remove_node
+ * @param {string} params.nodeId - ID of the node to remove.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "remove_node": {
+ *     "nodeId": "C",
+ *     "message": "Removing node C"
+ *   }
+ * }
+ */
+function renderRemoveNode(params) {
+    const { nodeId } = params;
+    console.log("renderRemoveNode", nodeId);
+    // Implement your diagram rendering logic here to remove a node.
+}
+
+/**
+ * **LDRS Command:** Resets the diagram display.
+ * @function LDR.reset
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "reset": {
+ *     "message": "Clearing the diagram"
+ *   }
+ * }
+ */
+function resetDisplay(params = {}) {
+    console.log("resetDisplay");
+    // Implement your diagram rendering logic here to reset the display.
+}
+
+/**
+ * **LDRS Command:** Selects a path in the diagram.
+ * @function LDR.select_path
+ * @param {string[]} params.nodeIds - Array of node IDs representing the path.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "select_path": {
+ *     "nodeIds": ["A", "B", "D"],
+ *     "message": "Selecting path A-B-D"
+ *   }
+ * }
+ */
+function renderSelectPath(params) {
+    const { nodeIds } = params;
+    console.log("renderSelectPath", nodeIds);
+    // Implement your diagram rendering logic here to select a path.
+}
+
+/**
+ * **LDRS Command:** Straightens a path in the diagram.
+ * @function LDR.straighten_path
+ * @param {string[]} params.nodeIds - Array of node IDs representing the path to straighten.
+ * @param {string} [params.message] - Description of the step (optional).
+ * @example
+ * {
+ *   "straighten_path": {
+ *     "nodeIds": ["G", "H", "I"],
+ *     "message": "Straightening path G-H-I"
+ *   }
+ * }
+ */
+function renderStraightenPath(params) {
+    const { nodeIds } = params;
+    console.log("renderStraightenPath", nodeIds);
+    // Implement your diagram rendering logic here to straighten a path.
+}
+
+// Example LDR Scripst in JSON format.
+
+export const simpleLdr = {
+    "1": { "reset": { "message": "Resetting the diagram" } },
+    "2": { "add_node": { "nodeId": "A", "data": { "label": "Node A" }, "kind": "circle", "message": "Adding node A" } },
+    "3": { "add_node": { "nodeId": "B", "data": { "label": "Node B" }, "kind": "square", "message": "Adding node B" } },
+    "4": { "connect_nodes": { "node1": "A", "node2": "B", "weight": 1, "edgeType": "solid", "message": "Connecting node A and B" } },
+    "5": { "select_path": { "nodeIds": ["A", "B"], "message": "Selecting path A to B" } }
+};
+
+export const ringDemoLrd = {
+    "1": { 'reset': { "message": "Clear graph and prepare for visualization." } },
+    "2": { 'add_circular_rings': { "ringSizes": [6, 12, 18], "message": "Adding circular rings of nodes" } },
+    "3": { "add_node": { "nodeId": "start", "kind": "start", "data": { "title": "Start Project" }, "message": "Add start node for the design project." } },
+    "4": { "add_node": { "nodeId": "end", "kind": "end", "data": { "title": "End Project" }, "message": "Add end node for the design project." } },
+    "5": { "add_node": { "nodeId": "task_identify_font", "kind": "task", "data": { "title": "Identify Font from Image", "description": "Identify a font in a screenshot.", "potential_solutions": { "manual_human": {}, "agent_font_recognition": {} } }, "message": "Add task: Identify Font from Image." } },
+    "6": { "connect_nodes": { "node1": "start", "node2": "task_identify_font", "message": "Connect start node to the font identification task." } },
+    "7": { "add_node": { "nodeId": "task_identify_font_manual", "kind": "solution", "data": { "name": "Manual Font Identification", "description": "Compare image to font libraries.", "pain_level": 3, "complexity": 1, "time_estimate": 2, "human_in_loop_feedback_initial": 1, "human_in_loop_feedback_refined": 1 }, "message": "Add manual solution node." } },
+    "8": { "connect_nodes": { "node1": "task_identify_font", "node2": "task_identify_font_manual", "message": "Connect task to manual solution." } },
+    "9": { "add_node": { "nodeId": "task_identify_font_agent", "kind": "solution", "data": { "name": "AI Font Recognition Agent", "description": "Use image recognition to identify fonts.", "pain_level": 1, "complexity": 1, "time_estimate": 1, "human_in_loop_feedback_initial": 4, "human_in_loop_feedback_refined": 2 }, "message": "Add AI agent solution node." } },
+    "10": { "connect_nodes": { "node1": "task_identify_font", "node2": "task_identify_font_agent", "message": "Connect task to AI agent solution." } },
+    "11": { "select_path": { "nodeIds": ["task_identify_font", "task_identify_font_manual", "task_identify_font_agent"], "message": "Highlighting task and solution options." } },
+    "12": { "copy_move_to_focus": { "nodeIds": null, "message": "Copying selected path to focus area." } },
+    "13": { "straighten_path": { "nodeIds": null, "message": "Arranging nodes linearly in focus area." } },
+}
+
+export const designCujLdr = {
+    "1": { "reset": { "message": "Initialize graph and prepare for visualization." } },
+    "2": { "add_node": { "nodeId": "start", "kind": "start", "data": { "title": "Start Project" }, "message": "Add start node for the design project." } },
+    "3": { "add_node": { "nodeId": "end", "kind": "end", "data": { "title": "End Project" }, "message": "Add end node for the design project." } },
+    "4": { "add_node": { "nodeId": "task_identify_font", "kind": "task", "data": { "title": "Identify Font from Image", "description": "Identify a font in a screenshot.", "potential_solutions": { "manual_human": {}, "agent_font_recognition": {} } }, "message": "Add task: Identify Font from Image." } },
+    "5": { "connect_nodes": { "node1": "start", "node2": "task_identify_font", "message": "Connect start node to the font identification task." } },
+    "6": { "add_node": { "nodeId": "task_identify_font_manual", "kind": "solution", "data": { "name": "Manual Font Identification", "description": "Compare image to font libraries.", "pain_level": 3, "complexity": 1, "time_estimate": 2, "human_in_loop_feedback_initial": 1, "human_in_loop_feedback_refined": 1 }, "message": "Add manual solution node." } },
+    "7": { "connect_nodes": { "node1": "task_identify_font", "node2": "task_identify_font_manual", "message": "Connect task to manual solution." } },
+    "8": { "add_node": { "nodeId": "task_identify_font_agent", "kind": "solution", "data": { "name": "AI Font Recognition Agent", "description": "Use image recognition to identify fonts.", "pain_level": 1, "complexity": 1, "time_estimate": 1, "human_in_loop_feedback_initial": 4, "human_in_loop_feedback_refined": 2 }, "message": "Add AI agent solution node." } },
+    "9": { "connect_nodes": { "node1": "task_identify_font", "node2": "task_identify_font_agent", "message": "Connect task to AI agent solution." } },
+    "10": { "select_path": { "nodeIds": ["task_identify_font", "task_identify_font_manual", "task_identify_font_agent"], "message": "Highlighting task and solution options." } },
+    "11": { "copy_move_to_focus": { "nodeIds": null, "message": "Copying selected path to focus area." } },
+    "12": { "straighten_path": { "nodeIds": null, "message": "Arranging nodes linearly in focus area." } },
+    "13": { "message_only": { "message": "Adding a second Task" } },
+    "14": { "add_node": { "nodeId": "task_svg_convert", "kind": "task", "data": { "title": "Convert SVG to Optimized Raster", "description": "Export SVGs in raster formats.", "potential_solutions": { "manual_human": {}, "script_batch_conversion": {}, "agent_intelligent_optimization": {} } }, "message": "Add task, convert SVG" } },
+    "15": { "connect_nodes": { "node1": "task_identify_font", "node2": "task_svg_convert", "message": "Connect the first task to the second task" } },
+    "16": { "add_node": { "nodeId": "task_svg_convert_manual", "kind": "solution", "data": { "name": "Manual SVG Export & Optimization", "description": "Designer manually exports SVGs from design software and uses separate image optimization tools.", "pain_level": 2, "complexity": 1, "time_estimate": 2, "human_in_loop_feedback_initial": 1, "human_in_loop_feedback_refined": 1 }, "message": "Adding the manual svg solution" } },
+    "17": { "connect_nodes": { "node1": "task_svg_convert", "node2": "task_svg_convert_manual", "message": "Connect task to manual solution." } },
+    "18": { "add_node": { "nodeId": "task_svg_convert_script", "kind": "solution", "data": { "name": "Scripted Batch Conversion", "description": "Script automates SVG to raster conversion and basic optimization for multiple files.", "pain_level": 1, "complexity": 2, "time_estimate": 2, "human_in_loop_feedback_initial": 3, "human_in_loop_feedback_refined": 2 }, "message": "Adding the script solution" } },
+    "19": { "connect_nodes": { "node1": "task_svg_convert", "node2": "task_svg_convert_script", "message": "Connect task to script solution." } },
+    "20": { "add_node": { "nodeId": "task_svg_convert_agent", "kind": "solution", "data": { "name": "AI-Powered Optimization Agent", "description": "Agent intelligently optimizes raster output based on context and platform requirements.", "pain_level": 1, "complexity": 2, "time_estimate": 1, "human_in_loop_feedback_initial": 4, "human_in_loop_feedback_refined": 2 }, "message": "Adding the agent solution" } },
+    "21": { "connect_nodes": { "node1": "task_svg_convert", "node2": "task_svg_convert_agent", "message": "Connect task to agent solution." } },
+    "22": { "connect_nodes": { "node1": "task_svg_convert", "node2": "end", "message": "Connect the svg convert task to end node" } },
+    "23": { "select_path": { "nodeIds": ["start", "task_identify_font", "task_svg_convert", "end"], "message": "Selecting the entire path." } },
+    "24": { "copy_move_to_focus": { "nodeIds": null, "message": "Copy the main path to the focus area." } },
+    "25": { "message_only": { "message": "Demonstrate the scales, by removing the current nodes first" } },
+    "26": { "remove_node": { "nodeId": "start", "message": "removing start node" } },
+    "27": { "remove_node": { "nodeId": "end", "message": "removing end node" } },
+    "28": { "remove_node": { "nodeId": "task_identify_font", "message": "removing find font node" } },
+    "29": { "remove_node": { "nodeId": "task_identify_font_manual", "message": "removing font manual solution node" } },
+    "30": { "remove_node": { "nodeId": "task_identify_font_agent", "message": "removing font ai solution node" } },
+    "31": { "remove_node": { "nodeId": "task_svg_convert", "message": "remove convert node" } },
+    "32": { "remove_node": { "nodeId": "task_svg_convert_manual", "message": "remove convert manual solution" } },
+    "33": { "remove_node": { "nodeId": "task_svg_convert_script", "message": "remove convert script solution" } },
+    "34": { "remove_node": { "nodeId": "task_svg_convert_agent", "message": "remove convert agent solution" } },
+    "35": { "message_only": { "message": "Recreate scales as per the JSON." } },
+    "36": { "add_circular_rings": { "ringSizes": [6, 12, 18], "message": "Creating circular rings to represent scales" } },
+    "37": { "select_path": { "nodeIds": ["node-0", "node-1", "node-2", "node-3", "node-4", "node-5"], "message": "Selecting time estimate nodes" } },
+    "38": { "copy_move_to_focus": { "nodeIds": null, "message": "Moving time estimate to focus area" } },
+    "39": { "straighten_path": { "nodeIds": null, "message": "Straightening for better view of Time Estimates" } },
+    "40": { "message_only": { "message": "Compressing..." } },
+    "41": { "compress_path": { "message": "Compressing scale titles path" } },
+    "42": { "add_compressed_path_to_graph": { "message": "Add compressed path" } }
+};
+
+export const genCompLdr = {
+    "1": { "reset": { "message": "Initialize graph for dynamic UI component generation." } },
+    "2": { "add_node": { "nodeId": "start", "kind": "start", "data": { "title": "Start Component Generation" }, "message": "Add start node." } },
+    "3": { "add_node": { "nodeId": "end", "kind": "end", "data": { "title": "End Component Generation" }, "message": "Add end node." } },
+    "4": { "add_node": { "nodeId": "define_brand", "kind": "task", "data": { "title": "Define Brand Guidelines", "description": "Establish color palette, typography, and overall style.", "potential_solutions": { "manual_human": { "name": "Manual Definition" }, "llm_brand_suggestion": { "name": "LLM Brand Suggestion" } } }, "message": "Add task: Define Brand Guidelines." } },
+    "5": { "connect_nodes": { "node1": "start", "node2": "define_brand", "message": "Connect start node to branding task." } },
+    "6": { "add_node": { "nodeId": "define_brand_manual", "kind": "solution", "data": { "name": "Manual Definition" }, "message": "Add manual solution for branding." } },
+    "7": { "connect_nodes": { "node1": "define_brand", "node2": "define_brand_manual", "message": "Connect branding task to manual solution." } },
+    "8": { "add_node": { "nodeId": "define_brand_llm", "kind": "solution", "data": { "name": "LLM Brand Suggestion" }, "message": "Add LLM solution for branding." } },
+    "9": { "connect_nodes": { "node1": "define_brand", "node2": "define_brand_llm", "message": "Connect branding task to LLM solution." } },
+    "10": { "message_only": { "message": "Triggering a delibration to choose best branding." } },
+    "11": { "add_node": { "nodeId": "create_button", "kind": "task", "data": { "title": "Create Button Component", "description": "Generate a reusable button component.", "potential_solutions": { "manual_human": { "name": "Manual Coding (React/Flutter)" }, "llm_code_generation": { "name": "LLM Code Generation" }, "llm_code_generation_flutter": { "name": "LLM Code Generation - Flutter" } } }, "message": "Add task: Create Button Component." } },
+    "12": { "connect_nodes": { "node1": "define_brand", "node2": "create_button", "message": "Connect branding task to button creation." } },
+    "13": { "add_node": { "nodeId": "create_button_manual", "kind": "solution", "data": { "name": "Manual Coding (React/Flutter)" }, "message": "Adding manual coding solution" } },
+    "14": { "connect_nodes": { "node1": "create_button", "node2": "create_button_manual", "message": "connect button task to manual solution" } },
+    "15": { "add_node": { "nodeId": "create_button_llm", "kind": "solution", "data": { "name": "LLM Code Generation" }, "message": "Adding LLM solution" } },
+    "16": { "connect_nodes": { "node1": "create_button", "node2": "create_button_llm", "message": "connect button task to llm solution" } },
+    "17": { "add_node": { "nodeId": "create_button_llm_flutter", "kind": "solution", "data": { "name": "LLM Code Generation - Flutter" }, "message": "Adding LLM Flutter solution" } },
+    "18": { "connect_nodes": { "node1": "create_button", "node2": "create_button_llm_flutter", "message": "connect button task to llm flutter solution" } },
+    "19": { "message_only": { "message": "Trigger a sub-graph to explore button variations." } },
+    "20": { "create_subgraph": { "parentNodeId": "create_button", "subGraphId": "Explore Button Variations", "message": "Creating a sub-graph for exploring button variations" } },
+    "21": { "add_node": { "nodeId": "create_slider", "kind": "task", "data": { "title": "Create Slider Component", "description": "Generate a reusable slider component.", "potential_solutions": { "manual_human": { "name": "Manual Coding (React/Flutter)" }, "llm_code_generation": { "name": "LLM Code Generation" }, "llm_code_generation_flutter": { "name": "LLM Code Generation - Flutter" } } }, "message": "Add task: Create Slider Component." } },
+    "22": { "connect_nodes": { "node1": "create_button", "node2": "create_slider", "message": "connect button to slider task" } },
+    "23": { "add_node": { "nodeId": "create_slider_manual", "kind": "solution", "data": { "name": "Manual Coding (React/Flutter)" }, "message": "Adding manual coding solution" } },
+    "24": { "connect_nodes": { "node1": "create_slider", "node2": "create_slider_manual", "message": "connect slider task to manual solution" } },
+    "25": { "add_node": { "nodeId": "create_slider_llm", "kind": "solution", "data": { "name": "LLM Code Generation" }, "message": "Adding LLM solution" } },
+    "26": { "connect_nodes": { "node1": "create_slider", "node2": "create_slider_llm", "message": "connect slider task to LLM solution" } },
+    "27": { "add_node": { "nodeId": "create_slider_llm_flutter", "kind": "solution", "data": { "name": "LLM Code Generation - Flutter" }, "message": "Adding LLM flutter solution" } },
+    "28": { "connect_nodes": { "node1": "create_slider", "node2": "create_slider_llm_flutter", "message": "connect slider task to LLM flutter solution" } },
+    "29": { "add_node": { "nodeId": "create_input", "kind": "task", "data": { "title": "Create Input Field Component", "description": "Generate a reusable input field component.", "potential_solutions": { "manual_human": { "name": "Manual Coding" }, "llm_code_generation": { "name": "LLM Code Generation" } } }, "message": "Add task: Create Input Field Component." } },
+    "30": { "connect_nodes": { "node1": "create_slider", "node2": "create_input", "message": "Connect create slider to input" } },
+    "31": { "connect_nodes": { "node1": "create_input", "node2": "end", "message": "Connecting the input to the end." } },
+    "32": { "add_node": { "nodeId": "create_input_manual", "kind": "solution", "data": { "name": "Manual Coding (React/Flutter)" }, "message": "Adding manual coding solution" } },
+    "33": { "connect_nodes": { "node1": "create_input", "node2": "create_input_manual", "message": "Connect input task to manual solution" } },
+    "34": { "add_node": { "nodeId": "create_input_llm", "kind": "solution", "data": { "name": "LLM Code Generation" }, "message": "Adding LLM solution" } },
+    "35": { "connect_nodes": { "node1": "create_input", "node2": "create_input_llm", "message": "Connect input task to LLM solution" } },
+    "36": { "add_node": { "nodeId": "create_input_llm_flutter", "kind": "solution", "data": { "name": "LLM Code Generation - Flutter" }, "message": "Adding LLM flutter solution" } },
+    "37": { "connect_nodes": { "node1": "create_input", "node2": "create_input_llm_flutter", "message": "connect input task to LLM flutter solution" } },
+    "38": { "select_path": { "nodeIds": ["start", "define_brand", "create_button", "create_slider", "create_input", "end"], "message": "Selecting the main path." } },
+    "39": { "copy_move_to_focus": { "nodeIds": null, "message": "Copying the main path to the focus area." } },
+    "40": { "straighten_path": { "nodeIds": null, "message": "Straighten the path" } },
+    "41": { "message_only": { "message": "Demonstrate adding more nodes to graph, will be removed." } },
+    "42": { "add_node": { "message": "Add a temporary node" } },
+    "43": { "add_node": { "message": "and another node" } },
+    "44": { "remove_node": { "nodeId": "node-42", "message": "Remove the nodes." } },
+    "45": { "remove_node": { "nodeId": "node-43", "message": "removing other extra node" } },
+    "46": { "message_only": { "message": "Now back to the graph at hand." } },
+    "47": { "compress_path": { "message": "Compressing path in focus area." } },
+    "48": { "add_compressed_path_to_graph": { "message": "Adding compressed path back to the main graph." } },
+    "49": { "message_only": { "message": "Script complete. Components generated (conceptually)." } }
+}
+
+const scripts = { simpleLdr, ringDemoLrd, designCujLdr, genCompLdr };
+
+export { exampleLdrProcessor, scripts } --------------------------------------------------------------------------------
+# File: index.html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>⌬ Benzo v2</title>
+    <link rel="stylesheet" href="css.css" />
+    <script src="gru.js" type="module" defer></script>
+    </style>
+</head>
+
+<body class="dark-mode">
+    <div id="controls">
+        <div id="mainSettings">
+            <h3>Settings</h3>
+            <div id="darkModeToggleContainer" class="is-dark-mode">
+                <div id="lightModeIcon">◑</div>
+                <div id="darkModeIcon">◐</div>
+            </div>
+        </div>
+
+        <div id="scriptControls">
+            <h3>Script Controls</h3>
+            <select id="scriptSelector">
+                <!-- Scripts will be populated here -->
+            </select>
+            <div id="playbackControls">
+                <button id="stepBackwardButton">Back</button>
+                <button id="playPauseButton">Play</button>
+                <button id="stepForwardButton">Next</button>
+            </div>
+            <div id="speedControl">
+
+                <label id="speedLabel" for="speedSlider">Speed (ms per step)</label>
+                <input type="range" id="speedSlider" min="100" max="2000" value="500" step="50">
+            </div>
+            <span id="scriptStepDisplay">Step: -</span>
+        </div>
+
+
+        <div id="templatesSection">
+            <h3>Graph Templates</h3>
+            <div>
+                <div class="hint">Number of layers</div>
+                <input type="text" id="triGridRingsInput" placeholder="3" value='3'>
+                <button id="addTriGridButton">Add Triangular Grid</button>
+            </div>
+            <div>
+                <div class="hint">Number of rings</div>
+                <input type="text" id="ringNodesInput" placeholder="[6, 12, 24]" value='[6, 12, 24]'>
+                <button id="addRingsButton">Add Circular Rings</button>
+            </div>
+        </div>
+
+        <div id="graphActionsSection">
+            <h3>Graph Actions</h3>
+            <button id="resetButton">Reset All</button>
+            <div><button id="addNodeButton">Add Node</button></div>
+            <div><button id="removeNodeButton">Remove Node</button></div>
+            <div><button id="connectNodesButton">Connect Nodes</button></div>
+        </div>
+
+    </div>
+
+    <div id="canvas-container">
+        <div id="observatory">
+            <svg id="observatorySvg" width="100%" height="100%">
+                <!-- Observatory content will be rendered here -->
+            </svg>
+        </div>
+
+        <div id="graphCanvas">
+            <svg id="mainSvg" width="100%" height="100%">
+                <!-- Graph content will be rendered here -->
+            </svg>
+        </div>
+    </div>
+</body>
+
+</html>--------------------------------------------------------------------------------
+# File: .DS_Store
+# Error reading file: .DS_Store - 'utf-8' codec can't decode byte 0x80 in position 3131: invalid start byte
+--------------------------------------------------------------------------------
+# File: alf.js
+/**
+ * @file alf.js
+ * ALF (Algorithmic Logic File) which is used to create a unique graph algorithim
+ * that combines deliberation, dynamic programming, shortest paths, human in the loop,
+ * and more.
+ */
+
+import { exampleLdrProcessor } from './ldr.js';
+
+const WEIGHTS = {
+    TIME: 0.4,
+    PAIN: 0.3,
+    COMPLEXITY: 0.2,
+    HUMAN_IN_LOOP: 0.1,
+    SUCCESS_PROBABILITY: 0.5,
+};
+
+function calculateWeight(taskData) {
+    const time = taskData.time_estimate || 4;
+    const pain = taskData.pain_level || 4;
+    const complexity = taskData.complexity || 4;
+    const humanLoop = taskData.human_in_loop_feedback_refined || 1;
+    const successProb = taskData.success_probability ?? 0.9;
+
+    return (
+        WEIGHTS.TIME * time +
+        WEIGHTS.PAIN * pain +
+        WEIGHTS.COMPLEXITY * complexity +
+        WEIGHTS.HUMAN_IN_LOOP * humanLoop +
+        WEIGHTS.SUCCESS_PROBABILITY * (1 - successProb)
+    );
+}
+
+class Graph {
+    constructor(renderCallback) {
+        this.nodes = {};
+        this.memo = {};
+        this.stepCounter = 1;
+        this.renderCallback = renderCallback || this.defaultRenderCallback;
+    }
+
+    defaultRenderCallback = (stepDefinition) => {
+        const ldrsScript = { [this.stepCounter++]: stepDefinition };
+        exampleLdrProcessor(ldrsScript);
+    }
+
+    // --- Functions that use render. --- //
+
+    resetGraph() {
+        this.nodes = {};
+        this.memo = {};
+        this.selectedPath = [];
+        this.focusArea = [];
+        this.stepCounter = 1;
+        this.renderCallback({ "reset": {} });
+    }
+
+    addNode(nodeId, data, kind = "task") {
+        this.nodes[nodeId] = { data, edges: {}, kind };
+        this.renderCallback({ "add_node": { nodeId, data, kind } });
+    }
+
+    addEdge(fromNodeId, toNodeId, weight = null, edgeType = "sequence") {
+        if (!this.nodes[fromNodeId] || !this.nodes[toNodeId]) return;
+
+        if (weight === null) {
+            weight = calculateWeight(this.nodes[toNodeId].data);
+        }
+        this.nodes[fromNodeId].edges[toNodeId] = { weight, edgeType };
+        this.renderCallback({ "connect_nodes": { node1: fromNodeId, node2: toNodeId, weight, edgeType } });
+    }
+
+    removeNode() {
+        const lastNodeId = Object.keys(this.nodes).pop();
+        if (lastNodeId) {
+            delete this.nodes[lastNodeId];
+            this.renderCallback({ "remove_node": { nodeId: lastNodeId } });
+            this.selectedPath = this.selectedPath.filter(id => id !== lastNodeId);
+            this.focusArea = this.focusArea.filter(id => id !== lastNodeId);
+        }
+    }
+
+    selectPath(nodeIds) {
+        this.selectedPath = nodeIds.filter(id => this.nodes[id]);
+        this.renderCallback({ "select_path": { nodeIds: this.selectedPath } });
+    }
+
+    copyMoveToFocus() {
+        if (this.selectedPath.length === 0) return;
+        this.focusArea = [];
+
+        this.selectedPath.forEach(nodeId => {
+            const originalNode = this.getNode(nodeId);
+            const focusNodeId = `focus_${nodeId}`;
+            this.focusArea.push(focusNodeId);
+            const focusNodeData = JSON.parse(JSON.stringify(originalNode.data));
+            this.renderCallback({ "add_node": { nodeId: focusNodeId, data: focusNodeData, kind: originalNode.kind } });
+        });
+
+        this.renderCallback({ "copy_move_to_focus": { nodeIds: this.focusArea } });
+    }
+
+    straightenPath() {
+        if (this.focusArea.length === 0) return;
+        this.renderCallback({ "straighten_path": { nodeIds: this.focusArea } });
+    }
+
+    compressPath() {
+        if (this.focusArea.length < 2) return;
+        const startNodeId = this.focusArea[0];
+        const endNodeId = this.focusArea[this.focusArea.length - 1];
+        this.renderCallback({ "compress_path": { startNodeId, endNodeId, intermediateNodes: this.focusArea.slice(1, -1) } });
+    }
+
+    async addCompressedPathToGraph() {
+        if (this.focusArea.length < 2) return;
+
+        const startNodeId = this.focusArea[0].replace(/^focus_/, '');
+        const endNodeId = this.focusArea[this.focusArea.length - 1].replace(/^focus_/, '');
+        const startNode = this.getNode(startNodeId);
+        const endNode = this.getNode(endNodeId);
+
+        if (!startNode || !endNode) {
+            console.warn("Start/end node not found.");
+            return;
+        }
+
+        const compressedTaskName = `Compressed_${startNode.data.title}_to_${endNode.data.title}`;
+        const compressedTaskData = await this.createTaskDataFromLLMSuggestion(compressedTaskName);
+        if (!compressedTaskData) return;
+
+        const compressedNodeId = this.addTask(compressedTaskData);
+        const originalPath = this.aStar(startNodeId, endNodeId);
+        const compressedWeight = originalPath.cost;
+
+        this.addEdge(startNodeId, compressedNodeId, compressedWeight, "compressed");
+        this.addEdge(compressedNodeId, endNodeId, 0, "compressed");
+
+        this.renderCallback({ "add_compressed_path_to_graph": { startNodeId, endNodeId, compressedNodeId, compressedWeight } });
+    }
+
+    addCircularRings(ringSizes) {
+        this.renderCallback({ "add_circular_rings": { ringSizes } })
+    }
+
+    addTriangularGrid(numRings) {
+        this.renderCallback({ "add_triangular_grid": { numRings } })
+    }
+
+    createSubGraph(parentNodeId, goal) {
+        const parentNode = this.getNode(parentNodeId);
+        if (!parentNode) {
+            console.warn(`Parent node not found: ${parentNodeId}`);
+            return null;
+        }
+
+        const subGraph = new Graph(this.renderCallback)
+        subGraph.addNode("sub_start", { title: `Sub-Graph Start (${goal})` }, "start");
+        subGraph.addNode("sub_end", { title: "Sub-Graph End" }, "end");
+
+        // TODO(clocksmith): Pass / copy all context, continuously, as needed.
+        if (parentNode.data.designContext) {
+            subGraph.designContext = { ...parentNode.data.designContext };
+        }
+
+        subGraph.goal = goal;
+        subGraph.parentNodeId = parentNodeId;
+
+        this.renderCallback({ "create_subgraph": { parentNodeId, subGraphId: subGraph.goal } });
+        return subGraph;
+    }
+
+    mergeSubGraph(subGraph, mergeStrategy = "add_nodes") {
+        if (!subGraph.parentNodeId) {
+            console.warn("Sub-graph has no parent node. Cannot merge.");
+            return;
+        }
+
+        const parentNode = this.getNode(subGraph.parentNodeId);
+        if (!parentNode) {
+            console.warn(`Parent node not found: ${subGraph.parentNodeId}`);
+            return;
+        }
+
+        switch (mergeStrategy) {
+            case "add_nodes":
+                // Add nodes/edges from sub-graph to main graph.
+                for (const nodeId in subGraph.nodes) {
+                    if (nodeId == "sub_start" || nodeId == "sub_end") continue;
+
+                    const newNodeId = `${subGraph.parentNodeId}_${nodeId}`;
+                    this.addNode(newNodeId, subGraph.nodes[nodeId].data, subGraph.nodes[nodeId].kind);
+
+                    // Connect the new node to parent.
+                    if (nodeId != "sub_start") this.addEdge(subGraph.parentNodeId, newNodeId)
+                }
+                for (const fromNodeId in subGraph.nodes) {
+                    for (const toNodeId in subGraph.nodes[fromNodeId].edges) {
+                        // Don't add edges that are from or to the start and end nodes.
+                        if (fromNodeId == "sub_start" || toNodeId == "sub_end" || fromNodeId == "sub_end" || toNodeId == "sub_start") continue;
+                        const newFromNodeId = `${subGraph.parentNodeId}_${fromNodeId}`;
+                        const newToNodeId = `${subGraph.parentNodeId}_${toNodeId}`;
+                        this.addEdge(newFromNodeId, newToNodeId, subGraph.nodes[fromNodeId].edges[toNodeId].weight, subGraph.nodes[fromNodeId].edges[toNodeId].edgeType);
+                    }
+                }
+                break;
+            case "update_parent":
+                // TODO(clocksmith): implemnet this.
+                console.warn("update_parent merge strategy not implemented yet.");
+                break;
+            case "compress":
+                // TODO(clocksmith): implemnet this.
+                console.warn("compress merge strategy not implemented yet.");
+                break;
+
+            default:
+                console.warn(`Unknown merge strategy: ${mergeStrategy}`);
+        }
+
+        this.renderCallback({ "merge_subgraph": { parentNodeId: subGraph.parentNodeId, subGraphId: subGraph.goal, mergeStrategy } });
+    }
+
+    // --- Functions that don't currently use render. --- //
+
+    getNode(nodeId) {
+        return this.nodes[nodeId];
+    }
+
+    heuristic(currentNodeId, endNodeId) {
+        // TODO:(clocksmith): Simplify, basic distance estimate.
+        const currentNodeNumber = parseInt(currentNodeId.match(/\d+/)[0], 10)
+        const endNodeNumber = parseInt(endNodeId.match(/\d+/)[0], 10)
+        return Math.abs(endNodeNumber - currentNodeNumber);
+    }
+
+    aStar(startNodeId, endNodeId) {
+        if (this.memo[startNodeId]) return this.memo[startNodeId];
+
+        const openSet = new Set([startNodeId]);
+        const cameFrom = {};
+        const gScore = { [startNodeId]: 0 };
+        const fScore = { [startNodeId]: this.heuristic(startNodeId, endNodeId) };
+
+        while (openSet.size > 0) {
+            let current = null;
+            let lowestFScore = Infinity;
+            for (const nodeId of openSet) {
+                if (fScore[nodeId] < lowestFScore) {
+                    current = nodeId;
+                    lowestFScore = fScore[nodeId];
+                }
+            }
+
+            if (current === endNodeId) {
+                const path = this.reconstructPath(cameFrom, current);
+                const cost = gScore[current];
+                this.memo[startNodeId] = { path, cost };
+                return { path, cost };
+            }
+
+            openSet.delete(current);
+
+            const currentNode = this.getNode(current);
+            if (!currentNode) continue;
+
+            for (const neighborId in currentNode.edges) {
+                const edgeData = currentNode.edges[neighborId];
+                const tentativeGScore = gScore[current] + edgeData.weight;
+
+                if (!(neighborId in gScore) || tentativeGScore < gScore[neighborId]) {
+                    cameFrom[neighborId] = current;
+                    gScore[neighborId] = tentativeGScore;
+                    fScore[neighborId] = tentativeGScore + this.heuristic(neighborId, endNodeId);
+                    if (!openSet.has(neighborId)) {
+                        openSet.add(neighborId);
+                    }
+                }
+            }
+        }
+
+        return { path: [], cost: Infinity };
+    }
+
+    reconstructPath(cameFrom, current) {
+        const totalPath = [current];
+        while (current in cameFrom) {
+            current = cameFrom[current];
+            totalPath.unshift(current);
+        }
+        return totalPath;
+    }
+
+    async callLLM(prompt, personas = null) {
+        console.log("LLM Prompt:", prompt);
+
+        if (personas) {
+            const personaResponses = await this.performDeliberation(prompt, personas);
+            return this.synthesizeDeliberation(personaResponses);
+        } else {
+            // Mocked single LLM call. Replace with actual API call.
+            const responses = [
+                { action: "proceed", suggestedTask: null, feedback: null, updatedWeights: {} },
+                { action: "add_task", suggestedTask: "localize_text", feedback: null, updatedWeights: {} },
+                { action: "re-evaluate", suggestedTask: null, feedback: "AI response was not helpful", updatedWeights: { "task_xyz": { human_in_loop_feedback_refined: 5 } } },
+                { action: "trigger_subgraph", subgraphGoal: "Explore localization options" } // Added subgraph
+            ];
+            const simulatedResponse = responses[Math.floor(Math.random() * responses.length)];
+            return simulatedResponse;
+        }
+    }
+
+    async performDeliberation(prompt, personas) {
+        const personaResponses = [];
+        for (const persona of personas) {
+            const personaPrompt = `Persona: ${persona.name}\nRole: ${persona.description}\n\n${prompt}`;
+            console.log(`Prompting Persona: ${persona.name}`);
+            const response = await this.callLLM(personaPrompt);
+            personaResponses.push({ persona, response });
+        }
+        return personaResponses;
+    }
+
+    synthesizeDeliberation(personaResponses) {
+        console.log("Synthesizing deliberation:", personaResponses);
+        // Placeholder: return the first response. Replace with a real synthesis.
+        const firstResponse = personaResponses[0]?.response;
+        if (!firstResponse || !firstResponse.action) {
+            return { action: "proceed" };
+        }
+        return firstResponse;
+    }
+
+
+    async selectAction(currentNodeId) {
+        const currentNode = this.getNode(currentNodeId);
+        if (!currentNode) { console.error(`Node not found: ${currentNodeId}`); return null; }
+
+        const shouldDeliberate = this.shouldTriggerDeliberation(currentNode);
+
+        let prompt = `Current task: ${currentNode.data.title}\nDescription: ${currentNode.data.description}\n`;
+        const availableSolutions = Object.entries(currentNode.data.potential_solutions)
+            .map(([key, solution]) => `${key}: ${solution.description} (Time: ${solution.time_estimate}, Pain: ${solution.pain_level}, Complexity: ${solution.complexity}, Human: ${solution.human_in_loop_feedback_refined})`)
+            .join("\n");
+
+        prompt += `Available solutions:\n${availableSolutions}\nChoose the best solution or suggest a new task:`;
+
+        let llmResponse;
+        if (shouldDeliberate) {
+            const personas = [
+                { name: "EfficiencyExpert", description: "Focuses on minimizing time and effort." },
+                { name: "QualityAdvocate", description: "Prioritizes design quality." },
+            ];
+            llmResponse = await this.callLLM(prompt, personas);
+        } else {
+            llmResponse = await this.callLLM(prompt);
+        }
+
+        switch (llmResponse.action) {
+            case "proceed":
+                for (let solutionKey in currentNode.data.potential_solutions) {
+                    if (currentNode.kind == "task") {
+                        let solutionNodeId = `${currentNodeId}_${solutionKey}`
+                        this.addNode(solutionNodeId, currentNode.data.potential_solutions[solutionKey], "solution");
+                        this.addEdge(currentNodeId, solutionNodeId, null, "solution_selection");
+                    }
+                }
+                return Object.keys(currentNode.edges)[0];
+
+            case "add_task":
+                const newTaskData = await this.createTaskDataFromLLMSuggestion(llmResponse.suggestedTask);
+                if (newTaskData) {
+                    const newNodeId = this.addTask(newTaskData);
+                    this.addEdge(currentNodeId, newNodeId, null, "llm_suggested")
+                    return newNodeId;
+                }
+                return null;
+
+            case "re-evaluate":
+                console.log("LLM Feedback:", llmResponse.feedback);
+                this.updateWeights(llmResponse.updatedWeights);
+                const bestPath = this.aStar(currentNodeId, "end");
+                return bestPath.path[1] || null;
+
+            case "trigger_subgraph":
+                return this.handleSubGraphTrigger(currentNodeId, llmResponse.subgraphGoal);
+
+            default:
+                console.warn("Unknown LLM command:", llmResponse.action);
+                return null;
+        }
+    }
+
+    shouldTriggerDeliberation(node) {
+        if (node.kind === "decision") return true;
+        if (node.data.complexity >= 6) return true;
+        return false;
+    }
+
+    async createTaskDataFromLLMSuggestion(taskName) {
+        const prompt = `Create a JSON object for a new design task named "${taskName}". Include title, description, potential solutions (at least 'manual_human'), and initial estimates (1-7 scale) for time, pain, complexity, and human_in_loop_feedback_initial/refined.`;
+        const llmResponse = await this.callLLM(prompt);
+
+        return {
+            title: taskName,
+            description: `LLM-suggested task: ${taskName}`,
+            potential_solutions: {
+                manual_human: {
+                    name: `Manual ${taskName}`,
+                    description: `Manually perform ${taskName}`,
+                    pain_level: 4, complexity: 4, time_estimate: 4,
+                    human_in_loop_feedback_initial: 1, human_in_loop_feedback_refined: 1,
+                },
+            },
+        };
+    }
+
+    addTask(taskData) {
+        const taskId = this.generateUniqueTaskId(taskData.title);
+        this.addNode(taskId, taskData);
+        const solutionId = `${taskId}_manual_human`;
+        this.addNode(solutionId, taskData.potential_solutions.manual_human, "solution");
+        this.addEdge(taskId, solutionId);
+        return taskId;
+    }
+
+    generateUniqueTaskId(taskTitle) {
+        const baseId = taskTitle.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+        let uniqueId = baseId;
+        let counter = 1;
+        while (this.nodes[uniqueId]) {
+            uniqueId = `${baseId}_${counter}`;
+            counter++;
+        }
+        return uniqueId;
+    }
+
+    requestHumanFeedback(nodeId) {
+        const node = this.getNode(nodeId);
+        console.log(`Requesting human feedback for task: ${node.data.title}`);
+        // Simulated feedback.
+        const feedbackTypes = [
+            { type: 'rating', scale: 'human_in_loop_feedback_refined', value: 4 },
+            { type: 'boolean', question: 'Was the task successful?', value: true },
+            { type: 'text', question: 'Describe any issues encountered', value: 'Minor adjustments needed' }
+        ];
+        const randomFeedback = feedbackTypes[Math.floor(Math.random() * feedbackTypes.length)]
+        return randomFeedback
+    }
+
+    updateWeights(feedback) {
+        for (const nodeId in feedback) {
+            const node = this.getNode(nodeId);
+            if (node) {
+                if (feedback[nodeId].human_in_loop_feedback_refined) {
+                    node.data.human_in_loop_feedback_refined = feedback[nodeId].human_in_loop_feedback_refined
+                }
+                for (const neighborId in node.edges) {
+                    node.edges[neighborId].weight = calculateWeight(this.nodes[neighborId].data);
+                }
+            }
+        }
+        this.memo = {};
+    }
+
+    async executeWorkflow(startNodeId, endNodeId) {
+        let current = startNodeId
+        let nextNodeId = await this.selectAction(current)
+
+        if (nextNodeId) {
+            const nextNode = this.getNode(nextNodeId);
+
+            if (nextNode && nextNode.kind === "solution") {
+                console.log(`Executing solution: ${nextNode.data.name}`);
+                await new Promise((resolve) => setTimeout(resolve, nextNode.data.time_estimate * 500)); // Simulate
+
+                const feedback = this.requestHumanFeedback(nextNodeId);
+                console.log("Feedback received:", feedback);
+                this.updateWeightsBasedOnFeedback(nextNodeId, feedback);
+                const path = this.aStar(nextNodeId, "end");
+
+                current = path.path[1] || null;
+                if (current == null) {
+                    console.log("Workflow completed (or no path found).");
+                    return;
+                }
+
+            } else {
+                current = nextNodeId
+            }
+        } else {
+            console.log("Workflow completed (or no path found).");
+            return;
+        }
+
+        return current
+    }
+
+    updateWeightsBasedOnFeedback(nodeId, feedback) {
+        const node = this.getNode(nodeId);
+        if (!node) return;
+
+        if (feedback.type === 'rating' && feedback.scale) {
+            node.data[feedback.scale] = feedback.value;
+        } else if (feedback.type === 'boolean' && feedback.question.includes('successful')) {
+            node.data.success_probability = feedback.value ? 0.95 : 0.5;
+        } else if (feedback.type === 'text') {
+            console.log(`Text feedback received: ${feedback.value}`);
+        }
+
+        for (const neighborId in node.edges) {
+            node.edges[neighborId].weight = calculateWeight(this.nodes[neighborId].data);
+        }
+    }
+
+    loadTasks(tasksJson) {
+        this.addNode("start", { title: "Start Project" }, "start");
+        this.addNode("end", { title: "End Project" }, "end");
+        let prevTaskId = "start";
+
+        for (const taskId in tasksJson) {
+            const taskData = tasksJson[taskId];
+            this.addNode(taskId, taskData);
+            this.addEdge(prevTaskId, taskId, null, "sequence");
+            prevTaskId = taskId;
+        }
+        this.addEdge(prevTaskId, "end");
+    }
+
+    async handleSubGraphTrigger(currentNodeId, subgraphGoal) {
+        const subGraph = this.createSubGraph(currentNodeId, subgraphGoal);
+
+        if (subGraph) {
+            console.log(`Subgraph created with goal: ${subgraphGoal}`)
+
+            //Option 1: Just create it. Let the main execution loop get back to it.
+            return null;
+
+            // Option 2: Run the subgraph immediately and merge when it's done.
+            // let currentSub = "sub_start";
+            // while (currentSub !== "sub_end" && currentSub !== null) {
+            //  currentSub = await subGraph.executeWorkflow(currentSub, "sub_end");
+            // }
+
+            // this.mergeSubGraph(subGraph);
+            // return this.selectAction(currentNodeId); // Re-evaluate after merge
+
+        }
+        console.warn("SubGraph creation failed")
+        return null;
+    }
+}
+
+export { Graph, calculateWeight };--------------------------------------------------------------------------------
+# File: gru.js
+import * as L from './ldr.js';
+import * as A from './alf.js';
+
+const graphCanvas = document.getElementById('graphCanvas');
+const controls = document.getElementById('controls');
+const darkModeToggleContainer = document.getElementById('darkModeToggleContainer');
+const resetButton = document.getElementById('resetButton');
+const addNodeButton = document.getElementById('addNodeButton');
+const removeNodeButton = document.getElementById('removeNodeButton');
+const connectNodesButton = document.getElementById('connectNodesButton');
+const ringNodesInput = document.getElementById('ringNodesInput');
+const addRingsButton = document.getElementById('addRingsButton');
+const triGridRingsInput = document.getElementById('triGridRingsInput');
+const addTriGridButton = document.getElementById('addTriGridButton');
+const observatory = document.getElementById('observatory');
+const scriptSelector = document.getElementById('scriptSelector');
+const stepBackwardButton = document.getElementById('stepBackwardButton');
+const playPauseButton = document.getElementById('playPauseButton');
+const stepForwardButton = document.getElementById('stepForwardButton');
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel = document.getElementById('speedLabel');
+const scriptStepDisplay = document.getElementById('scriptStepDisplay');
+const observatorySvg = document.getElementById('observatorySvg');
+const mainSvg = document.getElementById('mainSvg');
+
+let isConnectingNodes = false;
+let darkMode = true;
+let currentScript = null;
+let scriptSteps = [];
+let currentStepIndex = -1;
+let isPlaying = false;
+let playSpeed = 500;
+let playInterval;
+let messageHistoryArray = [];
+let selectedNodeIdForConnection = null;
+let nextNodeId = 0;
+let currentStepMessage;
+let messageHistory;
+
+const graph = new A.Graph(renderStep);
+
+const commandRenderMap = new Map([
+    ['add_circular_rings', renderAddCircularRings],
+    ['add_compressed_path_to_graph', renderAddCompressedPath],
+    ['add_node', renderAddNode],
+    ['add_triangular_grid', renderAddTriangularGrid],
+    ['compress_path', renderCompressPath],
+    ['connect_nodes', renderConnectNodes],
+    ['copy_move_to_focus', renderCopyMoveToFocus],
+    ['create_subgraph', renderCreateSubGraph],
+    ['merge_subgraph', renderMergeSubGraph],
+    ['message_only', renderMessageOnly],
+    ['remove_node', renderRemoveNode],
+    ['reset', resetDisplay],
+    ['select_path', renderSelectPath],
+    ['straighten_path', renderStraightenPath],
+]);
+
+
+function renderStep(stepDefinition) {
+    if (!stepDefinition) {
+        console.warn("renderStep: stepDefinition is empty or null.");
+        return;
+    }
+
+    const commandName = Object.keys(stepDefinition)[0];
+    const params = stepDefinition[commandName];
+
+    if (!commandName) {
+        console.warn("renderStep: Step is missing command.");
+        return;
+    }
+
+    const renderFunction = commandRenderMap.get(commandName);
+    if (renderFunction) {
+        renderFunction(params);
+    } else {
+        console.warn("renderStep: Unknown render action:", commandName, stepDefinition);
+    }
+}
+
+
+function renderAddNode(params) {
+    const { nodeId, data, kind } = params;
+    if (!nodeId) {
+        console.warn("renderAddNode: nodeId is undefined or missing in params:", params);
+        return;
+    }
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('class', `node ${kind}-node`);
+    circle.setAttribute('data-node-id', nodeId);
+    circle.setAttribute('r', 6);
+
+    if (data && typeof data.x === 'number' && typeof data.y === 'number') {
+        circle.setAttribute('cx', data.x);
+        circle.setAttribute('cy', data.y);
+    } else {
+        circle.setAttribute('cx', graphCanvas.clientWidth / 2);
+        circle.setAttribute('cy', graphCanvas.clientHeight / 2);
+    }
+
+    circle.addEventListener('click', () => onNodeClick(nodeId));
+    mainSvg.appendChild(circle);
+    updateEdgePositions();
+}
+
+function renderConnectNodes(params) {
+    const { node1, node2, weight, edgeType } = params;
+    if (!node1 || !node2) {
+        console.warn("renderConnectNodes: node1 or node2 is undefined or missing in params:", params);
+        return;
+    }
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', `edge ${edgeType}-edge`);
+    line.setAttribute('data-from', node1);
+    line.setAttribute('data-to', node2);
+    mainSvg.appendChild(line);
+    updateEdgePositions();
+}
+
+function resetDisplay(params) {
+    mainSvg.innerHTML = '';
+    observatorySvg.innerHTML = '';
+    setupObservatory();
+}
+
+function renderRemoveNode(params) {
+    const { nodeId } = params;
+    if (!nodeId) {
+        console.warn("renderRemoveNode: nodeId is undefined or missing in params:", params);
+        return;
+    }
+    const nodeElement = mainSvg.querySelector(`[data-node-id="${nodeId}"]`);
+    if (!nodeElement) {
+        console.warn("renderRemoveNode: nodeElement not found in mainSvg for nodeId:", nodeId);
+        return;
+    }
+    if (nodeElement.parentNode === mainSvg) {
+        mainSvg.removeChild(nodeElement);
+    } else {
+        console.warn("renderRemoveNode: nodeElement is not a child of mainSvg, unexpected state for nodeId:", nodeId);
+    }
+
+
+    const edges = mainSvg.querySelectorAll(`[data-from="${nodeId}"], [data-to="${nodeId}"]`);
+    edges.forEach(edge => {
+        if (edge.parentNode === mainSvg) {
+            mainSvg.removeChild(edge);
+        }
+    });
+}
+
+function renderSelectPath(params) {
+    const { nodeIds } = params;
+    if (!nodeIds) {
+        console.warn("renderSelectPath: nodeIds is undefined or missing in params:", params);
+        return;
+    }
+    mainSvg.querySelectorAll('.node.selected').forEach(node => {
+        node.classList.remove('selected');
+    });
+
+    nodeIds.forEach(nodeId => {
+        const nodeElement = mainSvg.querySelector(`.node[data-node-id="${nodeId}"]`);
+        if (!nodeElement) {
+            console.warn("renderSelectPath: nodeElement not found in mainSvg for nodeId:", nodeId);
+            return;
+        }
+        nodeElement.classList.add('selected');
+    });
+}
+
+function renderCopyMoveToFocus(params) {
+    const { nodeIds } = params;
+    if (!nodeIds) {
+        console.warn("renderCopyMoveToFocus: nodeIds is undefined or missing in params:", params);
+        observatorySvg.innerHTML = '';
+        return;
+    }
+    observatorySvg.innerHTML = '';
+    const observatoryRect = observatory.getBoundingClientRect();
+
+    nodeIds.forEach((nodeId, index) => {
+        const originalNode = mainSvg.querySelector(`.node[data-node-id="${nodeId}"]`);
+        if (!originalNode) {
+            console.warn(`renderCopyMoveToFocus: originalNode not found in mainSvg for nodeId: ${nodeId}`);
+            return;
+        }
+        const clonedNode = originalNode.cloneNode(true);
+        clonedNode.classList.add('focus-node');
+        clonedNode.removeAttribute('data-node-id');
+        clonedNode.setAttribute('data-focus-node-id', nodeId);
+
+        const targetX = 20 + (observatoryRect.width - 40) * (index / (nodeIds.length - 1 || 1));
+        const targetY = observatoryRect.height / 2;
+
+        clonedNode.setAttribute('cx', targetX);
+        clonedNode.setAttribute('cy', targetY);
+
+        observatorySvg.appendChild(clonedNode);
+    });
+
+    nodeIds.forEach(fromNodeId => {
+        nodeIds.forEach(toNodeId => {
+            const edge = mainSvg.querySelector(`.edge[data-from="${fromNodeId}"][data-to="${toNodeId}"]`);
+            if (edge) {
+                const clonedEdge = edge.cloneNode(true);
+                clonedEdge.classList.add('focus-edge');
+                clonedEdge.removeAttribute('data-from');
+                clonedEdge.removeAttribute('data-to');
+                clonedEdge.setAttribute('data-focus-from', fromNodeId);
+                clonedEdge.setAttribute('data-focus-to', toNodeId);
+                observatorySvg.appendChild(clonedEdge);
+            }
+        })
+    })
+    updateFocusEdgePositions();
+}
+
+function renderStraightenPath(params) {
+    const { nodeIds } = params;
+    if (!nodeIds) {
+        console.warn("renderStraightenPath: nodeIds is undefined or missing in params:", params);
+        return;
+    }
+    const observatoryRect = observatory.getBoundingClientRect();
+    const startX = 20;
+    const endX = observatoryRect.width - 20;
+    const yPos = observatoryRect.height / 2;
+
+    nodeIds.forEach((nodeId, index) => {
+        const nodeElement = observatorySvg.querySelector(`[data-focus-node-id="${nodeId}"]`);
+        if (!nodeElement) {
+            console.warn("renderStraightenPath: nodeElement not found in observatorySvg for nodeId:", nodeId);
+            return;
+        }
+        const targetX = startX + (endX - startX) * (index / (nodeIds.length - 1 || 1));
+        nodeElement.setAttribute('cx', targetX);
+        nodeElement.setAttribute('cy', yPos);
+    });
+    updateFocusEdgePositions();
+}
+
+function renderCompressPath(params) {
+    const { startNodeId, endNodeId, intermediateNodes } = params;
+    if (!intermediateNodes) {
+        console.warn("renderCompressPath: intermediateNodes is undefined or missing in params:", params);
+        return;
+    }
+    intermediateNodes.forEach(nodeId => {
+        const nodeElement = observatorySvg.querySelector(`[data-focus-node-id="${nodeId}"]`);
+        if (nodeElement) {
+            if (nodeElement.parentNode === observatorySvg) {
+                observatorySvg.removeChild(nodeElement);
+            } else {
+                console.warn("renderCompressPath: nodeElement is not a child of observatorySvg, unexpected state for nodeId:", nodeId);
+            }
+        } else {
+            console.warn("renderCompressPath: nodeElement not found in observatorySvg for nodeId:", nodeId);
+        }
+    });
+    observatorySvg.querySelectorAll('.focus-edge').forEach(edge => {
+        if (edge.parentNode === observatorySvg) {
+            observatorySvg.removeChild(edge);
+        }
+    });
+}
+
+function renderAddCompressedPath(params) {
+    const { startNodeId, endNodeId } = params;
+    if (!startNodeId || !endNodeId) {
+        console.warn("renderAddCompressedPath: startNodeId or endNodeId is undefined or missing in params:", params);
+        return;
+    }
+
+    const startNode = mainSvg.querySelector(`.node[data-node-id="${startNodeId}"]`);
+    const endNode = mainSvg.querySelector(`.node[data-node-id="${endNodeId}"]`);
+
+    if (!startNode) {
+        console.warn(`renderAddCompressedPath: startNode not found in mainSvg for startNodeId: ${startNodeId}`);
+        return;
+    }
+    if (!endNode) {
+        console.warn(`renderAddCompressedPath: endNode not found in mainSvg for endNodeId: ${endNodeId}`);
+        return;
+    }
+
+    const startRect = startNode.getBoundingClientRect();
+    const endRect = endNode.getBoundingClientRect();
+    const graphRect = graphCanvas.getBoundingClientRect();
+
+    const startX = startRect.left + startRect.width / 2 - graphRect.left;
+    const startY = startRect.top + startRect.height / 2 - graphRect.top;
+    const endX = endRect.left + endRect.width / 2 - graphRect.left;
+    const endY = endRect.top + endRect.height / 2 - graphRect.top;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', 'edge compressed-edge');
+    line.setAttribute('x1', startX);
+    line.setAttribute('y1', startY);
+    line.setAttribute('x2', endX);
+    line.setAttribute('y2', endY);
+    line.setAttribute('data-from', startNodeId);
+    line.setAttribute('data-to', endNodeId);
+    mainSvg.appendChild(line);
+    updateEdgePositions();
+}
+
+function renderAddCircularRings(params) {
+    const { ringSizes } = params;
+    if (!ringSizes || !Array.isArray(ringSizes)) {
+        console.warn("renderAddCircularRings: ringSizes is not a valid array in params:", params);
+        return;
+    }
+    const centerX = graphCanvas.clientWidth / 2;
+    const centerY = graphCanvas.clientHeight / 2;
+    let currentRadius = 40;
+    const minNodeSpacing = 40;
+    let previousRingNodes = 0;
+    const initialRingRadiusIncrement = Math.min(centerX, centerY) * 0.15;
+    let tempNextNodeId = nextNodeId;
+
+    ringSizes.forEach((numNodes, index) => {
+        if (!Number.isInteger(numNodes) || numNodes <= 0) {
+            console.warn("renderAddCircularRings: Invalid ring size:", numNodes, "in params:", params);
+            return;
+        }
+        let ringRadiusIncrement;
+        if (index === 0) {
+            ringRadiusIncrement = initialRingRadiusIncrement;
+        } else {
+            ringRadiusIncrement = Math.max(minNodeSpacing * previousRingNodes / (2 * Math.PI), currentRadius * 0.3);
+        }
+        currentRadius += ringRadiusIncrement;
+        const angleStep = (2 * Math.PI) / numNodes;
+
+        for (let i = 0; i < numNodes; i++) {
+            const angle = i * angleStep;
+            const x = centerX + currentRadius * Math.cos(angle);
+            const y = centerY + currentRadius * Math.sin(angle);
+            graph.addNode(`node-${tempNextNodeId++}`, { x: x, y: y }, "ring");
+        }
+        previousRingNodes = numNodes;
+    });
+    nextNodeId = tempNextNodeId;
+    updateEdgePositions();
+}
+
+function renderAddTriangularGrid(params) {
+    const { numRings } = params;
+    if (!Number.isInteger(numRings) || numRings <= 0) {
+        console.warn("renderAddTriangularGrid: numRings is not a positive integer in params:", params);
+        return;
+    }
+    const centerX = graphCanvas.clientWidth / 2;
+    const centerY = graphCanvas.clientHeight / 2;
+    const nodeSpacing = Math.min(centerX, centerY) * 0.2;
+    let tempNextNodeId = nextNodeId;
+
+    for (let ring = 0; ring < numRings; ring++) {
+        let nodesInRing = ring === 0 ? 1 : 6 * ring;
+        for (let i = 0; i < nodesInRing; i++) {
+            let angle = (2 * Math.PI / nodesInRing) * i - (ring % 2 === 0 ? 0 : Math.PI / 6);
+            let x = centerX + nodeSpacing * ring * Math.cos(angle);
+            let y = centerY + nodeSpacing * ring * Math.sin(angle);
+            graph.addNode(`node-${tempNextNodeId++}`, { x: x, y: y }, 'trigrid');
+        }
+    }
+    nextNodeId = tempNextNodeId;
+    updateEdgePositions();
+}
+
+function renderMessageOnly(params) {
+    const { message } = params;
+    if (message) {
+        messageHistoryArray.push(message);
+        if (messageHistoryArray.length > 3) messageHistoryArray.shift();
+        updateMessageDisplay();
+    } else {
+        console.warn("renderMessageOnly: message is undefined or missing in params:", params);
+    }
+}
+
+function renderCreateSubGraph(params) {
+    const { parentNodeId, subGraphId } = params;
+    if (!parentNodeId || !subGraphId) {
+        console.warn("renderCreateSubGraph: parentNodeId or subGraphId is undefined or missing in params:", params);
+        return;
+    }
+    console.log("renderCreateSubGraph - Visual cue for subgraph:", parentNodeId, subGraphId);
+}
+
+function renderMergeSubGraph(params) {
+    const { parentNodeId, subGraphId, mergeStrategy } = params;
+    if (!parentNodeId || !subGraphId) {
+        console.warn("renderMergeSubGraph: parentNodeId or subGraphId is undefined or missing in params:", params);
+        return;
+    }
+    console.log("renderMergeSubGraph - Visual cue for subgraph merge:", parentNodeId, subGraphId, mergeStrategy);
+}
+
+
+function updateEdgePositions() {
+    const edges = mainSvg.querySelectorAll('.edge');
+    edges.forEach(edge => {
+        const fromNodeId = edge.getAttribute('data-from');
+        const toNodeId = edge.getAttribute('data-to');
+        const fromNode = mainSvg.querySelector(`[data-node-id="${fromNodeId}"]`);
+        const toNode = mainSvg.querySelector(`[data-node-id="${toNodeId}"]`);
+
+        if (!fromNode) {
+            console.warn("updateEdgePositions: fromNode not found in mainSvg for fromNodeId:", fromNodeId);
+            return;
+        }
+        if (!toNode) {
+            console.warn("updateEdgePositions: toNode not found in mainSvg for toNodeId:", toNodeId);
+            return;
+        }
+
+        edge.setAttribute('x1', fromNode.getAttribute('cx') || 0);
+        edge.setAttribute('y1', fromNode.getAttribute('cy') || 0);
+        edge.setAttribute('x2', toNode.getAttribute('cx') || 0);
+        edge.setAttribute('y2', toNode.getAttribute('cy') || 0);
+    });
+}
+
+function updateFocusEdgePositions() {
+    const edges = observatorySvg.querySelectorAll('.focus-edge');
+    edges.forEach(edge => {
+        const fromNodeId = edge.getAttribute('data-focus-from');
+        const toNodeId = edge.getAttribute('data-focus-to');
+        const fromNode = observatorySvg.querySelector(`[data-focus-node-id="${fromNodeId}"]`);
+        const toNode = observatorySvg.querySelector(`[data-focus-node-id="${toNodeId}"]`);
+
+        if (!fromNode) {
+            console.warn("updateFocusEdgePositions: fromNode not found in observatorySvg for fromNodeId:", fromNodeId);
+            return;
+        }
+        if (!toNode) {
+            console.warn("updateFocusEdgePositions: toNode not found in observatorySvg for toNodeId:", toNodeId);
+            return;
+        }
+
+        edge.setAttribute('x1', fromNode.getAttribute('cx') || 0);
+        edge.setAttribute('y1', fromNode.getAttribute('cy') || 0);
+        edge.setAttribute('x2', toNode.getAttribute('cx') || 0);
+        edge.setAttribute('y2', toNode.getAttribute('cy') || 0);
+    });
+}
+
+function onNodeClick(nodeId) {
+    if (isConnectingNodes) {
+        if (!selectedNodeIdForConnection) {
+            selectedNodeIdForConnection = nodeId;
+            const selectedNode = mainSvg.querySelector(`.node[data-node-id="${nodeId}"]`);
+            if (selectedNode) selectedNode.classList.add('selected');
+        } else if (selectedNodeIdForConnection !== nodeId) {
+            graph.addEdge(selectedNodeIdForConnection, nodeId);
+            const previouslySelectedNode = mainSvg.querySelector(`.node[data-node-id="${selectedNodeIdForConnection}"]`);
+            if (previouslySelectedNode) previouslySelectedNode.classList.remove('selected');
+            selectedNodeIdForConnection = null;
+            isConnectingNodes = false;
+            connectNodesButton.textContent = 'Connect Nodes';
+        } else {
+            const selectedNode = mainSvg.querySelector(`.node[data-node-id="${selectedNodeIdForConnection}"]`);
+            if (selectedNode) selectedNode.classList.remove('selected');
+            selectedNodeIdForConnection = null;
+        }
+    } else {
+        graph.selectPath(
+            [...document.querySelectorAll('.node.selected')].map(n => n.dataset.nodeId)
+                .filter(id => id !== nodeId)
+                .concat(selectedNodeIdForConnection === nodeId ? [] : [nodeId])
+        );
+        selectedNodeIdForConnection = null;
+    }
+}
+
+function setupObservatory() {
+    observatorySvg.innerHTML = '';
+    const observatoryFragment = document.createDocumentFragment();
+
+    const currentStepMessageTextElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    currentStepMessageTextElem.setAttribute('id', 'currentStepMessage');
+    currentStepMessageTextElem.setAttribute('class', 'step-message');
+    currentStepMessageTextElem.setAttribute('x', '50%');
+    currentStepMessageTextElem.setAttribute('y', '10');
+    observatoryFragment.appendChild(currentStepMessageTextElem);
+
+    const messageHistoryGroupElem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    messageHistoryGroupElem.setAttribute('id', 'messageHistory');
+    observatoryFragment.appendChild(messageHistoryGroupElem);
+
+    observatorySvg.appendChild(observatoryFragment);
+
+    currentStepMessage = currentStepMessageTextElem;
+    messageHistory = messageHistoryGroupElem;
+}
+
+function updateMessageDisplay() {
+    if (currentStepMessage) {
+        currentStepMessage.textContent = scriptSteps[currentStepIndex]?.[1]?.message || "";
+        currentStepMessage.classList.add('visible');
+        setTimeout(() => {
+            if (currentStepMessage) {
+                currentStepMessage.classList.remove('visible');
+            }
+        }, playSpeed * 3);
+    } else {
+        console.warn("updateMessageDisplay: currentStepMessage element is not defined.");
+    }
+
+    if (messageHistory) {
+        messageHistory.innerHTML = '';
+        messageHistoryArray.forEach((msg, index) => {
+            const textElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textElem.setAttribute('class', 'message-history');
+            textElem.setAttribute('x', '50%');
+            textElem.setAttribute('y', 40 + (index * 15));
+            textElem.textContent = msg;
+            messageHistory.appendChild(textElem);
+        });
+    } else {
+        console.warn("updateMessageDisplay: messageHistory element is not defined.");
+    }
+}
+
+function updateStepDisplay() {
+    scriptStepDisplay.textContent = `Step: ${currentStepIndex + 1}/${scriptSteps.length > 0 ? scriptSteps.length : '-'}`;
+}
+
+function loadScript(scriptName) {
+    currentScript = L.scripts[scriptName];
+    if (currentScript) {
+        scriptSteps = Object.entries(currentScript).sort((a, b) => parseInt(a[0].substring(1)) - parseInt(b[0].substring(1)));
+        currentStepIndex = -1;
+        graph.resetGraph();
+        stopPlaying();
+        stepForward();
+        updateStepDisplay();
+        messageHistoryArray = [];
+        updateMessageDisplay();
+    } else {
+        scriptSteps = [];
+        currentStepIndex = -1;
+        updateStepDisplay();
+    }
+}
+
+function executeStep(step) {
+    if (!step) {
+        console.warn("executeStep: step is undefined or null.");
+        return;
+    }
+
+    const commandName = Object.keys(step)[0];
+    const params = step[commandName];
+
+    if (params && params.message) {
+        renderMessageOnly({ message: params.message });
+    }
+
+    const renderFunction = commandRenderMap.get(commandName);
+    if (renderFunction) {
+        renderFunction(params);
+    } else {
+        console.warn("executeStep: Unknown command:", commandName, step);
+    }
+}
+
+function stepForward() {
+    stopPlaying();
+    if (currentStepIndex < scriptSteps.length - 1) {
+        currentStepIndex++;
+        executeStep(scriptSteps[currentStepIndex][1]);
+        updateStepDisplay();
+    } else {
+        stopPlaying();
+        isPlaying = false;
+        playPauseButton.textContent = 'Play';
+    }
+}
+
+function stepBackward() {
+    stopPlaying();
+    if (currentStepIndex > 0) {
+        currentStepIndex--;
+        executeStep(scriptSteps[currentStepIndex][1]);
+        updateStepDisplay();
+    } else if (currentStepIndex === 0) {
+        currentStepIndex--;
+        resetDisplay({});
+        updateStepDisplay();
+    }
+}
+function playScript() {
+    if (isPlaying) {
+        stopPlaying();
+    } else {
+        isPlaying = true;
+        playPauseButton.textContent = 'Pause';
+        if (currentStepIndex >= scriptSteps.length - 1) {
+            currentStepIndex = -1;
+            graph.resetGraph();
+            updateStepDisplay();
+        }
+        playInterval = setInterval(() => {
+            stepForward();
+            if (currentStepIndex >= scriptSteps.length - 1) stopPlaying();
+        }, playSpeed);
+    }
+}
+
+function stopPlaying() {
+    isPlaying = false;
+    playPauseButton.textContent = 'Play';
+    clearInterval(playInterval);
+}
+
+function togglePlayPause() {
+    if (isPlaying) {
+        stopPlaying();
+    } else {
+        playScript();
+    }
+}
+
+function toggleDarkMode() {
+    darkMode = !darkMode;
+    document.body.classList.toggle('light-mode', !darkMode);
+    darkModeToggleContainer.classList.toggle('is-dark-mode', darkMode);
+}
+
+function setupEventListeners() {
+    darkModeToggleContainer.addEventListener('click', toggleDarkMode);
+    resetButton.addEventListener('click', () => { graph.resetGraph(); });
+    addNodeButton.addEventListener('click', () => { graph.addNode(`node-${nextNodeId++}`, { x: 100, y: 100 }); });
+    removeNodeButton.addEventListener('click', () => { graph.removeNode(); });
+    connectNodesButton.addEventListener('click', () => {
+        isConnectingNodes = !isConnectingNodes;
+        connectNodesButton.textContent = isConnectingNodes ? 'Connecting...' : 'Connect Nodes';
+        if (!isConnectingNodes) {
+            selectedNodeIdForConnection = null;
+        }
+    });
+    addRingsButton.addEventListener('click', () => {
+        try {
+            const ringSizes = JSON.parse(ringNodesInput.value);
+            if (Array.isArray(ringSizes) && ringSizes.every(Number.isInteger) && ringSizes.every(size => size > 0)) {
+                graph.addCircularRings(ringSizes);
+            } else {
+                console.warn("Invalid input for circular rings. Please provide an array of positive integers. Input was:", ringNodesInput.value);
+            }
+        } catch (e) {
+            console.error("Error parsing ring sizes:", e);
+        }
+    });
+    addTriGridButton.addEventListener('click', () => {
+        const numRings = parseInt(triGridRingsInput.value, 10);
+        if (Number.isInteger(numRings) && numRings > 0) {
+            graph.addTriangularGrid(numRings);
+        } else {
+            console.warn("Invalid input for triangular grid rings. Please provide a positive integer. Input was:", triGridRingsInput.value);
+        }
+    });
+
+    scriptSelector.addEventListener('change', (event) => { loadScript(event.target.value); });
+    stepForwardButton.addEventListener('click', () => { stepForward(); });
+    stepBackwardButton.addEventListener('click', () => { stepBackward(); });
+    playPauseButton.addEventListener('click', () => { togglePlayPause(); });
+    speedSlider.addEventListener('input', (event) => {
+        playSpeed = parseInt(event.target.value, 10);
+        if (isPlaying) { stopPlaying(); playScript(); }
+        speedLabel.textContent = `Step Speed (${playSpeed}ms)`;
+    });
+}
+
+function populateScriptSelector() {
+    scriptSelector.innerHTML = '';
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select Script';
+    scriptSelector.appendChild(defaultOption);
+
+    for (const scriptName in L.scripts) {
+        if (Object.hasOwnProperty.call(L.scripts, scriptName)) {
+            const option = document.createElement('option');
+            option.value = scriptName;
+            option.textContent = scriptName;
+            scriptSelector.appendChild(option);
+        }
+    }
+}
+
+function main() {
+    setupObservatory();
+    setupEventListeners();
+    populateScriptSelector();
+    updateStepDisplay();
+
+    scriptSelector.value = "designCujLdr";
+    loadScript(scriptSelector.value);
+}
+
+main();--------------------------------------------------------------------------------
+# File: README.md
+# Benzo
+
+LDR is a system for modeling and optimizing complex workflows, using a combination of dynamic weighted graphs, Large Language Models (LLMs), human-in-the-loop feedback, scripting, deliberation, and sub-graph exploration.  This README describes the core concepts, the LDR scripting language, and how the system works. This project is currently implemented with HTML, CSS, and JavaScript (using *no* external libraries, for maximum portability and transparency) and provides a visual, interactive representation of the graph and script execution.
+
+## Core Concepts
+
+The system represents workflows as a **dynamic, weighted, directed graph**.
+
+*   **Nodes:** Represent different elements of the workflow:
+    *   **Start Node:** The initiation point of a workflow or sub-goal.
+    *   **Task Nodes:** Individual tasks within the workflow (e.g., "Identify Font," "Generate Code").
+    *   **Solution Nodes:** Potential ways to accomplish a task (e.g., "Manual," "AI Agent").
+    *   **End Node:** The completion point of a workflow or sub-goal.
+    *   **Decision Nodes:** Points where the system (or an LLM) chooses between different paths.
+*   **Edges:** Represent the flow and dependencies between nodes. Edges have *weights* that represent the "cost" of taking that path.  Cost can include:
+    *   **Time Estimate:**  Estimated time to complete the task/solution.
+    *   **Pain Level:**  The undesirability or tedium of the task for a human.
+    *   **Complexity:**  The cognitive load or skill required.
+    *   **Human-in-the-Loop Cost:**  The time/effort required for human review.
+    *   **Resource Cost:** (Optional) Computational cost, subscription fees, etc.
+    *   **Probability of Success:** (Especially important for LLM-driven solutions).
+
+*   **Dynamic Graph:** The graph is *dynamic*.  Its structure (nodes and edges) and the weights on the edges can change during execution based on:
+    *   **LLM Suggestions:** The LLM can suggest new tasks, solutions, or even compressions.
+    *   **Human Feedback:**  Humans can provide feedback, add tasks, or modify the graph.
+    *   **Task Outcomes:**  The success or failure of a task can influence the weights.
+    * **Deliberation results**: When LLM or human personas deliberate, the graph changes.
+
+*   **Dynamic Programming (Memoization):** The system uses dynamic programming to avoid redundant calculations by storing the optimal paths for sub-problems (e.g., "the best way to generate placeholder content").
+
+*   **A\* Search:** The A\* algorithm is used to find the optimal (lowest cost) path through the graph, taking into account the weights on the edges and a heuristic estimate of the remaining cost to the goal. The LLM can provide this heuristic.
+
+*   **LLM Roles:**
+    *   **Action Selection:**  At decision nodes, the LLM chooses the best next action (e.g., which solution to use for a task).
+    *   **Task Suggestion:** The LLM can analyze the current state and suggest new tasks that weren't initially considered.
+    *   **Heuristic Generation:**  The LLM provides estimates of the remaining cost to the goal, improving the efficiency of A\*.
+    *   **Code/Script Generation:** The LLM can generate code (e.g., Python, JavaScript) to automate tasks.
+    *   **Deliberation:** Multiple LLM "personas" (with different expertise or perspectives) can engage in a structured debate to arrive at a better solution.
+
+*   **Human-in-the-Loop:**  Human designers can:
+    *   Provide feedback on LLM suggestions (ratings, corrections, explanations).
+    *   Add new tasks or modify existing ones.
+    *   Perform tasks that require human judgment or creativity.
+    *   Participate in deliberation alongside LLM personas.
+
+* **Sub-Graphs:** Allow for focused work on complex tasks. These represent a temporary "branching"
+   of effort. Sub-graphs have the same algorithmic properties and rules as the root graph.
+    * Triggered manually by a human or automatically by an LLM.
+    * Subgraph work is merged into the main graph when complete (or rolled back).
+
+*   **Compression:** Frequently used sequences of tasks can be compressed into single, higher-level tasks, simplifying the graph and improving efficiency. The LLM can suggest compressions.
+
+* **Deliberation:** Multiple AI or human *personas* review options and provide reason, critique and suggestions. A moderator synthesizes all the inforamtion.
+
+## LDR Scripting Language
+
+The LDR Scripting Language is a JSON-based language for defining sequences of actions (visualizations) to be performed on the graph. It is used for:
+
+*   **Demonstration:**  Illustrating the system's capabilities and how it works.
+*   **Visualization:**  Providing a visual representation of the graph manipulation process.
+*   **Testing:**  Creating reproducible test cases.
+*   **Automation:** Defining and running pre-set graph operations (though the core system is designed for dynamic decision-making, not just script execution).
+
+Scripts are JSON objects. Keys are step names (e.g., "step1"), and values are action objects. Steps run sequentially.
+
+**LDR Action Types:**
+
+*   `"reset": null` - Resets the graph to its initial state (clears all nodes and edges).
+*   `"add_node": { "id": "node_id", "data": { ... }, "type": "task" }` - Adds a new node.  `id` is a unique identifier. `data` is an object containing node-specific data (e.g., task details). `type` is a string indicating the node type (e.g., "task", "solution", "start", "end", "decision").
+*   `"remove_node": null` - Removes the *last added* node.  (For more precise control, a future version might allow specifying a node ID).
+*   `"connect_nodes": { "node1": "node_id_1", "node2": "node_id_2" }` - Creates an edge between two existing nodes.
+*   `"add_circular_rings": [ring_size_1, ring_size_2, ...]` - Creates concentric rings of nodes.  The array specifies the number of nodes in each ring.
+*   `"add_triangular_grid": number_of_rings` - Creates a triangular grid of nodes.
+*   `"select_path": [node_id_1, node_id_2, ...]` - Selects a sequence of nodes, highlighting them.
+*   `"copy_move_to_focus": null` - Copies the currently selected path to a separate "focus area" (observatory) for closer examination.
+*   `"straighten_path": null` - Arranges the nodes in the focus area in a horizontal line.
+*   `"compress_path": null` - Visually compresses the path in the focus area, replacing the intermediate nodes with a single edge.
+*   `"add_compressed_path_to_graph": null` - Adds a compressed path (represented by a single edge) back to the main graph.
+* `"create_subgraph": { "parentNodeId": "node_id", "subGraphId": "goal_description" }` -  Visually indicates the creation of a sub-graph, associated with a parent node.
+* `"merge_subgraph": { "parentNodeId": "node_id", "subGraphId": "goal_description", "mergeStrategy": "add_nodes" }` - Visually indicates merging a sub-graph.  `mergeStrategy` can be "add_nodes" (add all sub-graph nodes and edges), "update_parent" (update parent node data), or "compress" (create a compressed task).
+
+**Example LDR Script:**
+
+```json
+{
+  "my_script": {
+    "step1": { "reset": null, "message": "Initial state." },
+    "step2": { "add_node": { "id": "start", "type": "start", "data": {} }, "message": "Add start node."},
+    "step3": { "add_node": { "id": "task1", "type": "task", "data": { "title": "My Task" } } },
+    "step4": { "connect_nodes": { "node1": "start", "node2": "task1" } },
+    "step5": { "add_node": { "id": "end", "type": "end", "data": {} } },
+    "step6": { "connect_nodes": { "node1": "task1", "node2": "end" } },
+    "step7": { "select_path": ["start", "task1", "end"] },
+    "step8": { "copy_move_to_focus": null },
+    "step9": { "straighten_path": null },
+      "step10": {
+      "message": "Creating a sub-graph for detailed task analysis."
+    },
+    "step11": {
+      "create_subgraph": { "parentNodeId": "task1", "subGraphId": "Analyze Task 1 Options" }
+    },
+        "step12": {
+            "message": "Sub-graph work complete, merging back."
+        },
+        "step13": {
+            "merge_subgraph": { "parentNodeId": "task1", "subGraphId": "Analyze Task 1 Options", "mergeStrategy": "add_nodes" }
+        },
+    "step14": { "compress_path": null },
+    "step15": { "add_compressed_path_to_graph": null }
+  }
+}
+
+## Setup
+
+Simply open the index.html file in a web browser.
+
+Interaction: Use the controls in the left panel to manipulate the graph, run scripts, and adjust settings. The main graph is displayed in the center, and the "observatory" area at the top is used for focused views.
+
+Scripts:
+
+The 'script.js' file should export a const called 'scripts' which is a map of script-keys to LDR scripts. For example
+
+```
+export const scripts = {
+    "script-key-1": { //LDR script },
+    "script-key-2": { //LDR script }
+ };
+ ```
+
+## TODOs
+
+TODO: Full LLM Integration - Replace the mocked LLM calls with connections to real LLM APIs.
+
+TODO: Deliberation iteration - Implement sophisticated methods for synthesizing persona responses in deliberations.
+
+TODO Subgraph execution - Enable full execution of workflows within sub-graphs, including recursive sub-graph creation.
+
+TODO Save state, continuation, persistance - Implement mechanisms for saving and loading graph data.
+
+TODO: UX improvements - Enhance the UI for better usability and visual clarity.
+
+TODO: Additional LDR commands - allow for more functionality directly from LDR scripting--------------------------------------------------------------------------------
+# File: css.css
+:root {
+    --bg-color: black;
+    --text-color: white;
+    --control-bg-color: black;
+    --node-color: white;
+    --edge-color: white;
+    --switch-bg: black;
+    --switch-thumb-bg: white;
+    --switch-active-bg: white;
+    --button-bg: black;
+    --button-text-color: white;
+    --button-hover-bg: white;
+    --input-bg: black;
+    --input-text-color: white;
+    --input-border-color: white;
+    --section-title-color: white;
+    --slider-track-color: white;
+    --slider-thumb-color: white;
+    --message-color: white;
+}
+
+.light-mode {
+    --bg-color: white;
+    --text-color: black;
+    --control-bg-color: white;
+    --node-color: black;
+    --edge-color: black;
+    --switch-bg: white;
+    --switch-thumb-bg: black;
+    --switch-active-bg: black;
+    --button-bg: white;
+    --button-text-color: black;
+    --button-hover-bg: white;
+    --input-bg: white;
+    --input-text-color: black;
+    --input-border-color: black;
+    --section-title-color: black;
+    --slider-track-color: black;
+    --slider-thumb-color: black;
+    --message-color: black;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    font-family: monospace;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    height: 100vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#controls {
+    width: 256px;
+    height: 100vh;
+    padding: 24px;
+    background-color: var(--control-bg-color);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    align-items: stretch;
+    border-right: 1px solid var(--text-color);
+    box-sizing: border-box;
+}
+
+#controls h3 {
+    color: var(--section-title-color);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+#controls .hint {
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+#canvas-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+#observatory {
+    height: 384px;
+    background-color: var(--control-bg-color);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--text-color);
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+}
+
+#graphCanvas {
+    flex-grow: 1;
+    background-color: var(--bg-color);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+#graphCanvas svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.node {
+    fill: var(--node-color);
+    stroke: none;
+    cursor: pointer;
+}
+
+.node.selected {
+    stroke: magenta;
+    stroke-width: 4px;
+}
+
+.node.focus-node {
+    fill: lime;
+}
+
+.edge {
+    stroke: var(--edge-color);
+    stroke-width: 1;
+    fill: none;
+}
+
+.edge.focus-edge {
+    stroke-dasharray: 5, 5;
+    fill: lime;
+}
+
+#darkModeToggleContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#darkModeToggleContainer div {
+    display: flex;
+    font-size: 2rem;
+    line-height: 24px;
+    user-select: none;
+    cursor: pointer;
+    text-align: center;
+
+}
+
+#darkModeToggleContainer.is-dark-mode #darkModeIcon,
+#darkModeToggleContainer:not(.is-dark-mode) #lightModeIcon {
+    display: inline-block;
+}
+
+#darkModeToggleContainer.dark-mode #lightModeIcon,
+#darkModeToggleContainer:not(.dark-mode) #darkModeIcon {
+    display: none;
+}
+
+
+button,
+select,
+input[type="text"],
+input[type="range"] {
+    background-color: var(--button-bg);
+    color: var(--button-text-color);
+    border: 1px solid var(--text-color);
+    padding: 8px;
+    border-radius: 1px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s;
+    outline: none;
+    font-family: monospace;
+    font-weight: lighter;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    margin: 4px 0;
+    display: block;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-bg);
+}
+
+.light-mode button:hover {
+    color: var(--button-bg);
+}
+
+button:active {
+    background-color: var(--button-text-color);
+    color: var(--button-bg);
+}
+
+input[type="text"],
+select {
+    padding: 6px 10px;
+    cursor: text;
+    text-align: left;
+}
+
+input[type="text"]::placeholder {
+    text-align: left;
+}
+
+input[type="text"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: calc(100% - 24px);
+    height: 10px;
+    background: transparent;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    background: var(--slider-track-color);
+    height: 4px;
+    border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+    background: var(--slider-track-color);
+    height: 4px;
+    border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    background-color: var(--slider-thumb-color);
+    border-radius: 50%;
+    margin-top: -6px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    -moz-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    background-color: var(--slider-thumb-color);
+    border-radius: 50%;
+}
+
+
+.step-message {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    fill: var(--message-color);
+    font-size: 1.4em;
+    text-anchor: middle;
+    dominant-baseline: hanging;
+    y: 12px;
+}
+
+.step-message.visible {
+    opacity: 1;
+}
+
+.message-history {
+    fill: var(--message-color);
+    font-size: 1.2rem;
+    text-anchor: middle;
+    dominant-baseline: hanging;
+}
+
+#observatoryRect {
+    fill: var(--control-bg-color);
+    stroke: var(--text-color);
+    stroke-width: 1px;
+}
+
+#scriptControls {
+    margin-bottom: 10px;
+}
+
+#playbackControls {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+#playbackControls button {
+    margin: 0;
+}
+
+#speedControl label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+#speedSlider {
+    appearance: none;
+    height: 4px;
+    border: none;
+}
+
+#templatesSection>div,
+#graphActionsSection>div {
+    margin-bottom: 16px;
+}
+
+#templatesSection h3,
+#graphActionsSection h3,
+#scriptControls h3 {
+    color: var(--section-title-color);
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+#scriptControls h3 {
+    margin-top: 0;
+}--------------------------------------------------------------------------------
+# File: .gitignore
+xp/

@@ -1,4 +1,4 @@
-# Benzo
+# LDR
 
 LDR is a system for modeling and optimizing complex workflows, using a combination of dynamic weighted graphs, Large Language Models (LLMs), human-in-the-loop feedback, scripting, deliberation, and sub-graph exploration.  This README describes the core concepts, the LDR scripting language, and how the system works. This project is currently implemented with HTML, CSS, and JavaScript (using *no* external libraries, for maximum portability and transparency) and provides a visual, interactive representation of the graph and script execution.
 
